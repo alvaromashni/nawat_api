@@ -1,6 +1,5 @@
 package br.com.smartmesquitaapi.gateway;
 
-import javax.xml.transform.Result;
 import java.math.BigDecimal;
 
 public interface DealPaymentGateway {

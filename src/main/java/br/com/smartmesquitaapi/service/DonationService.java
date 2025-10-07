@@ -25,12 +25,16 @@ public class DonationService {
         newDonation.setIdInstitution(idInstitution);
         newDonation.setIdTransactionGateway(resultPaymentGateway.transactionId());
 
+        System.out.println(">>>>> Status recebido do Gateway: '" + resultPaymentGateway.status() + "'");
+
         if("success".equals(resultPaymentGateway.status())){
             newDonation.setStatus(StatusDonation.APPROVED);
         }
-        else if("refused".equals(resultPaymentGateway.status())){
+        else {
             newDonation.setStatus(StatusDonation.REFUSED);
         }
+
+        System.out.println(">>>>> Objeto Doacao antes de salvar: " + newDonation);
 
         return donationRepository.save(newDonation);
     }

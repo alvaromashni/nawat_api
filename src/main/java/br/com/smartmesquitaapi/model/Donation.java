@@ -1,6 +1,7 @@
 package br.com.smartmesquitaapi.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,8 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "donations")
-@Getter
-@Setter
+@Data
 public class Donation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +20,8 @@ public class Donation {
     @Column(nullable = false)
     private BigDecimal donationValue; // valor da doação
 
-    @Column(nullable = false, updatable = false)
     @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime donatedAt; // data de criação da doação
 
     @Enumerated(EnumType.STRING)

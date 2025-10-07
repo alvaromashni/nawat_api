@@ -20,7 +20,7 @@ public record ResultPaymentGateway(
 ) {
 
     public static ResultPaymentGateway success(String transactionId, BigDecimal paidValue){
-        return new ResultPaymentGateway("sucess", transactionId, paidValue, null);
+        return new ResultPaymentGateway("success", transactionId, paidValue, null);
     }
 
     public static ResultPaymentGateway failed(String errorMessage){
