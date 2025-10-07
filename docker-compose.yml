@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: donations_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Alvinho@25
+      POSTGRES_DB: donations_db
+    # Mapeamento de portas. Conecta a porta 5432 da sua máquina (host)
+    # com a porta 5432 de dentro do container.
+    ports:
+      - "5432:5432"
+    # Volumes são usados para persistir os dados. Sem isso, ao derrubar o container,
+    # todos os dados do banco seriam perdidos.
+    volumes:
+      - donations-db-data:/var/lib/postgresql/data
+
+# Declaração do volume nomeado para garantir a persistência
+volumes:
+  donations-db-data:
