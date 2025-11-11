@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.gateway;
+package br.com.smartmesquitaapi.gatewayDeprecated;
 
 import java.math.BigDecimal;
 

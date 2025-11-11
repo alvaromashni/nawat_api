@@ -1,7 +1,7 @@
 package br.com.smartmesquitaapi.service;
 
-import br.com.smartmesquitaapi.gateway.DealPaymentGateway;
-import br.com.smartmesquitaapi.gateway.ResultPaymentGateway;
+import br.com.smartmesquitaapi.gatewayDeprecated.DealPaymentGateway;
+import br.com.smartmesquitaapi.gatewayDeprecated.ResultPaymentGateway;
 import br.com.smartmesquitaapi.model.Donation;
 import br.com.smartmesquitaapi.model.StatusDonation;
 import br.com.smartmesquitaapi.repository.DonationRepository;

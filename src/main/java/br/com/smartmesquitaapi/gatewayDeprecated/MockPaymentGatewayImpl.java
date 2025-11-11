@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.gateway;
+package br.com.smartmesquitaapi.gatewayDeprecated;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
