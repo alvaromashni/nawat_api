@@ -38,7 +38,7 @@ public final class CryptoUtils {
         return new SecretKeySpec(keyBites, ALG);
     }
 
-    static String encrypt(String plaintext){
+    public static String encrypt(String plaintext){
 
         if (plaintext == null) return null;
         try {

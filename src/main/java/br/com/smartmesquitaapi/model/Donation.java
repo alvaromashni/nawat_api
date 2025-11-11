@@ -31,7 +31,4 @@ public class Donation {
 
     @Column(nullable = false)
     private Long idInstitution;
-
-    @Column(unique = true)
-    private String idTransactionGateway; // id da transação do gateway
 }

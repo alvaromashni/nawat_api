@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Setter
 @Embeddable
 public class BankDetails implements Serializable {
-    
+
     @Column(name = "bank_name", length = 100)
     private String bankName;
 
