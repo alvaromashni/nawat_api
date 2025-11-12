@@ -56,6 +56,7 @@ public class BankDetails implements Serializable {
     private LocalDateTime verifiedAt;
 
     @Column(name = "pix_key", length = 255)
+    @Convert(converter = CryptoConverter.class)
     private String pixKey;
 
     /**

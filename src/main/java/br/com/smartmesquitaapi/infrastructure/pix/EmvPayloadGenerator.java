@@ -144,7 +144,7 @@ public class EmvPayloadGenerator {
      */
     private static String formatAmount(Integer amountCents) {
         double amountInReais = amountCents / 100.0;
-        return String.format("%.2f", amountInReais);
+        return String.format(java.util.Locale.US,"%.2f", amountInReais);
     }
 
     /**
