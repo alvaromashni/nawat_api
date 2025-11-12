@@ -1,6 +1,6 @@
 package br.com.smartmesquitaapi.service;
 
-import br.com.smartmesquitaapi.model.User;
+import br.com.smartmesquitaapi.model.user.User;
 import br.com.smartmesquitaapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

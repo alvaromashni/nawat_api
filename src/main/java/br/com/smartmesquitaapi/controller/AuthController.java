@@ -5,7 +5,7 @@ import br.com.smartmesquitaapi.dto.request.LoginRequest;
 import br.com.smartmesquitaapi.dto.request.RegisterUserRequest;
 import br.com.smartmesquitaapi.dto.response.LoginResponse;
 import br.com.smartmesquitaapi.dto.response.RegisterUserResponse;
-import br.com.smartmesquitaapi.model.User;
+import br.com.smartmesquitaapi.model.user.User;
 import br.com.smartmesquitaapi.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

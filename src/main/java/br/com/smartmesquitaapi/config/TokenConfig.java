@@ -1,6 +1,6 @@
 package br.com.smartmesquitaapi.config;
 
-import br.com.smartmesquitaapi.model.User;
+import br.com.smartmesquitaapi.model.user.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;

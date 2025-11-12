@@ -1,6 +1,6 @@
 package br.com.smartmesquitaapi.controller;
 
-import br.com.smartmesquitaapi.model.User;
+import br.com.smartmesquitaapi.model.user.User;
 import br.com.smartmesquitaapi.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

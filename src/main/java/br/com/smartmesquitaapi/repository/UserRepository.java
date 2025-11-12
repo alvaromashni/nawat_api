@@ -1,6 +1,6 @@
 package br.com.smartmesquitaapi.repository;
 
-import br.com.smartmesquitaapi.model.User;
+import br.com.smartmesquitaapi.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
