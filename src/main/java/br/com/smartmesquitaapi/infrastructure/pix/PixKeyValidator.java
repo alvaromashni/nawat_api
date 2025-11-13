@@ -1,10 +1,8 @@
 package br.com.smartmesquitaapi.infrastructure.pix;
 
-import br.com.smartmesquitaapi.model.pix.PixKeyType;
+import br.com.smartmesquitaapi.domain.user.PixKeyType;
 
 import java.util.regex.Pattern;
-
-import br.com.smartmesquitaapi.model.pix.PixKeyType;
 
 /**
  * Validador de chaves PIX
