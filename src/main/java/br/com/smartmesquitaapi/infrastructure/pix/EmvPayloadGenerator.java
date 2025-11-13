@@ -196,18 +196,14 @@ public class EmvPayloadGenerator {
         return sanitized.trim();
     }
 
-    /**
-     * Remove acentos de uma 'string'
-     */
+
     private static String removeAccents(String text) {
         return java.text.Normalizer
                 .normalize(text, java.text.Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "");
     }
 
-    /**
-     * Valida os inputs obrigatórios
-     */
+
     private static void validateInputs(String pixKey, String merchantName, String merchantCity, String txid) {
         if (pixKey == null || pixKey.isBlank()) {
             throw new IllegalArgumentException("Chave PIX é obrigatória");

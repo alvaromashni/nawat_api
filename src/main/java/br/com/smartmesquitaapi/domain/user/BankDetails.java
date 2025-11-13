@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Embeddable
+@Builder
 public class BankDetails implements Serializable {
 
     @Column(name = "bank_name", length = 100)
