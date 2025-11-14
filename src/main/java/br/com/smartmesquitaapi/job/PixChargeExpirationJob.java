@@ -16,7 +16,7 @@ public class PixChargeExpirationJob {
 
     private final PixChargeService pixChargeService;
 
-    @Scheduled(fixedDelay = 300000) // 5 minutos em mili
+    @Scheduled(fixedDelay = 300000)
     public void expireOldChanges(){
         try{
             log.debug("Iniciando job de expiração de cobranças PIX");
@@ -29,6 +29,5 @@ public class PixChargeExpirationJob {
             log.error("Erro ao executar job de expiração.", e);
         }
     }
-
 }
 

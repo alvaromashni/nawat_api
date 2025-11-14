@@ -34,8 +34,8 @@ public class PixChargeService {
     private final UserRepository userRepository;
 
     // Configurações de validação
-    private static final int MIN_AMOUNT_CENTS = 100;        // R$ 1,00
-    private static final int MAX_AMOUNT_CENTS = 1000000;    // R$ 10.000,00
+    private static final int MIN_AMOUNT_CENTS = 100;
+    private static final int MAX_AMOUNT_CENTS = 1000000;
     private static final int DEFAULT_EXPIRATION_MINUTES = 10;
     private static final int MAX_EXPIRATION_MINUTES = 60;
     private static final int MAX_CHARGES_PER_HOUR = 100;
