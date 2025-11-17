@@ -1,7 +1,23 @@
 package br.com.smartmesquitaapi.infrastructure.security.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record LoginRequest(@Email@NotEmpty(message = "email obrigatório") String email,
-                           @NotEmpty(message = "a senha é obrigatória") String password) {}
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginRequest {
+
+    @NotBlank(message = "Email é obrigatório")
+    @Email(message = "Email inválido")
+    private String email;
+
+    @NotBlank(message = "Senha é obrigatória")
+    private String password;
+}

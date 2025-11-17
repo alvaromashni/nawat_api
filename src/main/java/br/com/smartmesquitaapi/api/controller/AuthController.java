@@ -1,61 +1,49 @@
 package br.com.smartmesquitaapi.api.controller;
 
-import br.com.smartmesquitaapi.infrastructure.security.TokenConfig;
 import br.com.smartmesquitaapi.infrastructure.security.dto.LoginRequest;
+import br.com.smartmesquitaapi.infrastructure.security.dto.AuthResponse;
 import br.com.smartmesquitaapi.infrastructure.security.dto.RegisterUserRequest;
-import br.com.smartmesquitaapi.infrastructure.security.dto.LoginResponse;
-import br.com.smartmesquitaapi.infrastructure.security.dto.RegisterUserResponse;
-import br.com.smartmesquitaapi.domain.user.User;
-import br.com.smartmesquitaapi.domain.user.UserRepository;
+import br.com.smartmesquitaapi.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final TokenConfig tokenConfig;
+    private final AuthService authService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenConfig tokenConfig) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.tokenConfig = tokenConfig;
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterUserRequest request) {
+        log.info("POST /api/auth/register - Email: {} | Role: {}", request.getEmail(), request.getRole());
+
+        AuthResponse response = authService.register(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        log.info("POST /api/auth/login - Email: {}", request.getEmail());
 
-        UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.email(), request.password());
-        Authentication authentication = authenticationManager.authenticate(userAndPass);
+        AuthResponse response = authService.login(request);
 
-        User user = (User) authentication.getPrincipal();
-        String token = tokenConfig.generateToken(user);
-
-        return ResponseEntity.ok(new LoginResponse(token));
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest request){
-        User newUser = new User();
-        newUser.setName(request.name());
-        newUser.setEmail(request.email());
-        newUser.setPassword(passwordEncoder.encode(request.password()));
-
-        userRepository.save(newUser);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(new RegisterUserResponse(newUser.getName(), newUser.getEmail()));
+    @GetMapping("/verify")
+    public ResponseEntity<Void> verifyToken() {
+        // Se chegou aqui, o token é válido (passou pelo filtro de autenticação)
+        return ResponseEntity.ok().build();
     }
 }
