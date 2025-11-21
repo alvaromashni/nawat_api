@@ -1,22 +1,53 @@
+# Docker Compose - Smart Mesquita API
+
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15
-    container_name: donations_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Alvinho@25
-      POSTGRES_DB: donations_db
-    # Mapeamento de portas. Conecta a porta 5432 da sua máquina (host)
-    # com a porta 5432 de dentro do container.
+  redis:
+    image: redis:7-alpine
+    container_name: smartmesquita-redis
+    command: redis-server --appendonly yes
     ports:
-      - "5432:5432"
-    # Volumes são usados para persistir os dados. Sem isso, ao derrubar o container,
-    # todos os dados do banco seriam perdidos.
+      - "6379:6379"
     volumes:
-      - donations-db-data:/var/lib/postgresql/data
+      - redis_data:/data
+    networks:
+      - smartmesquita-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
-# Declaração do volume nomeado para garantir a persistência
 volumes:
-  donations-db-data:
+  redis_data:
+    driver: local
+
+networks:
+  smartmesquita-network:
+    driver: bridge
+
+# ====================================================================
+# Como usar:
+# ====================================================================
+#
+# 1. Iniciar Redis:
+#    docker-compose up -d
+#
+# 2. Parar:
+#    docker-compose down
+#
+# 3. Ver logs:
+#    docker-compose logs -f redis
+#
+# 4. Acessar Redis:
+#    localhost:6379
+#
+# 5. Testar conexão:
+#    docker exec -it smartmesquita-redis redis-cli ping
+#    (deve retornar: PONG)
+#
+# ====================================================================
+# NOTA: Seu PostgreSQL e PgAdmin locais continuam funcionando
+# normalmente. Este docker-compose adiciona APENAS o Redis.
+# ====================================================================
