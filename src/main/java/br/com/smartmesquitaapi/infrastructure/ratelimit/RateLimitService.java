@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.infrastructure;
+package br.com.smartmesquitaapi.infrastructure.ratelimit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.support.PropertiesLoaderSupport;
