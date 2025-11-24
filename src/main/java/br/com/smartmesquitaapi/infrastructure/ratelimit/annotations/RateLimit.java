@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RateLimit {
 
-    String key();
+    String key() default "";
 
     int limit() default 10;
 

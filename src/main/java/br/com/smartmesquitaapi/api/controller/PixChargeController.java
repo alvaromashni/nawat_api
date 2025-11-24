@@ -1,6 +1,8 @@
 package br.com.smartmesquitaapi.api.controller;
 
 import br.com.smartmesquitaapi.domain.user.User;
+import br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimitType;
+import br.com.smartmesquitaapi.infrastructure.ratelimit.annotations.RateLimit;
 import br.com.smartmesquitaapi.service.pix.PixChargeService;
 import br.com.smartmesquitaapi.service.pix.dto.CreatePixChargeRequest;
 import br.com.smartmesquitaapi.service.pix.dto.CreatePixChargeResponse;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Controller para gerenciar cobranças PIX
@@ -29,6 +33,7 @@ public class PixChargeController {
      * Cria uma nova cobrança PIX com QR Code
      */
     @PostMapping("/{localId}/pix")
+    @RateLimit(limit = 1, duration = 10, unit = TimeUnit.SECONDS, type = RateLimitType.USER)
     public ResponseEntity<CreatePixChargeResponse> createPixCharge(
             @PathVariable String localId,
             @Valid @RequestBody CreatePixChargeRequest request,

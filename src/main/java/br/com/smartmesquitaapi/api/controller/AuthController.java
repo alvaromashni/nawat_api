@@ -1,5 +1,7 @@
 package br.com.smartmesquitaapi.api.controller;
 
+import br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimitType;
+import br.com.smartmesquitaapi.infrastructure.ratelimit.annotations.RateLimit;
 import br.com.smartmesquitaapi.infrastructure.security.dto.request.LoginRequest;
 import br.com.smartmesquitaapi.infrastructure.security.dto.response.AuthResponse;
 import br.com.smartmesquitaapi.infrastructure.security.dto.request.RegisterUserRequest;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -33,6 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @RateLimit(limit = 5, duration = 60, unit = TimeUnit.SECONDS, type = RateLimitType.IP)
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         log.info("POST /api/auth/login - Email: {}", request.getEmail());
 
@@ -43,7 +48,6 @@ public class AuthController {
 
     @GetMapping("/verify")
     public ResponseEntity<Void> verifyToken() {
-        // Se chegou aqui, o token é válido (passou pelo filtro de autenticação)
         return ResponseEntity.ok().build();
     }
 }
