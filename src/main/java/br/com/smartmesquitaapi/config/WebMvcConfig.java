@@ -1,27 +1,19 @@
 package br.com.smartmesquitaapi.config;
 
-import br.com.smartmesquitaapi.api.interceptor.RateLimitInterceptor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Configuração do Spring MVC
+ *
+ * Nota: Rate limiting agora é feito via AOP (@RateLimit annotation)
+ * ao invés de interceptors HTTP
  */
 @Configuration
-@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final RateLimitInterceptor rateLimitInterceptor;
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry){
-        registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("api/donations/**/pix")
-                .order(1);
-    }
+    // Rate limiting removido - agora usa @RateLimit annotation com AOP
 
     @Override
     public void addCorsMappings(CorsRegistry registry){

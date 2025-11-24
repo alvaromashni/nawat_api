@@ -1,14 +1,15 @@
 package br.com.smartmesquitaapi.api.exception;
 
-import br.com.smartmesquitaapi.service.pix.exception.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.http.HttpStatus;
+import br.com.smartmesquitaapi.api.dto.error.ErrorResponse;
+import br.com.smartmesquitaapi.api.exception.auth.AuthenticationException;
+import br.com.smartmesquitaapi.api.exception.infrastructure.RateLimitExceededException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -16,63 +17,27 @@ import java.util.Map;
 
 /**
  * Handler global de exceções
+ * Agora simplificado com suporte à hierarquia de exceções
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex){
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    /**
+     * Handler genérico para todas as ApplicationException
+     * Usa o HttpStatus definido na própria exceção
+     */
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorResponse> handleApplicationException(ApplicationException ex) {
+        return buildErrorResponse(ex.getHttpStatus(), ex.getMessage());
     }
 
-    @ExceptionHandler(ChargeNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleChargeNotFound(ChargeNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(UserInactiveException.class)
-    public ResponseEntity<ErrorResponse> handleUserInactive(UserInactiveException ex) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
-    }
-
-    @ExceptionHandler(PixKeyNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handlePixKeyNotFound(PixKeyNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
-    @ExceptionHandler(PixKeyNotVerifiedException.class)
-    public ResponseEntity<ErrorResponse> handlePixKeyNotVerified(PixKeyNotVerifiedException ex) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
-    }
-
-    @ExceptionHandler(InvalidPixKeyException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidPixKey(InvalidPixKeyException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
-    @ExceptionHandler(InvalidAmountException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidAmount(InvalidAmountException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
-    @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRequest(InvalidRequestException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
-    @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RateLimitExceededException ex) {
-        return buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
-    }
-
-    @ExceptionHandler(ChargeAlreadyProcessedException.class)
-    public ResponseEntity<ErrorResponse> handleChargeAlreadyProcessed(ChargeAlreadyProcessedException ex) {
-        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
-    }
-
-    @ExceptionHandler(QrCodeGenerationException.class)
-    public ResponseEntity<ErrorResponse> handleQrCodeGeneration(QrCodeGenerationException ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    /**
+     * Handler específico para exceções de autenticação
+     * (pode adicionar lógica extra como logging de tentativas de login)
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        return buildErrorResponse(ex.getHttpStatus(), ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -103,6 +68,14 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitExceededException ex){
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("X-RateLimit-Retry-After-Seconds", String.valueOf(ex.getResetTime()))
+                .header("X-RateLimit-Remaining", String.valueOf(ex.getRemaining()))
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status,  String message) {
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -115,18 +88,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    @Data
-    @AllArgsConstructor
-    @lombok.Builder
-    public static class ErrorResponse {
 
-        private LocalDateTime timestamp;
-        private Integer status;
-        private String error;
-        private String message;
-        private Map<String, String> details;
-
-    }
 
 }
 

@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -52,6 +53,34 @@ public class RateLimitService {
         } catch (Exception e) {
             log.error("Verificando erro de 'rate limit' para chave: {}", key, e);
             return true;
+        }
+    }
+
+    public long getRemainingRequests(String key, int maxRequests) {
+        String redisKey = "ratelimit:" + key;
+
+        try {
+            Long currentCount = (Long) redisTemplate.opsForValue().get(redisKey);
+            if (currentCount == null) {
+                return maxRequests;
+            }
+            return Math.max(0, maxRequests - currentCount);
+        } catch (Exception e) {
+            log.error("Error getting remaining requests for key: {}", key, e);
+            return maxRequests;
+        }
+    }
+
+
+    public long getResetTimeSeconds(String key) {
+        String redisKey = "ratelimit:" + key;
+
+        try {
+            Long ttl = redisTemplate.getExpire(redisKey, TimeUnit.SECONDS);
+            return ttl != null && ttl > 0 ? ttl : 0;
+        } catch (Exception e) {
+            log.error("Error getting reset time for key: {}", key, e);
+            return 0;
         }
     }
 

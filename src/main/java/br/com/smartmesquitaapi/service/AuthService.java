@@ -1,12 +1,15 @@
 package br.com.smartmesquitaapi.service;
 
+import br.com.smartmesquitaapi.api.exception.auth.EmailAlreadyExistsException;
+import br.com.smartmesquitaapi.api.exception.auth.InvalidCredentialsException;
+import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
 import br.com.smartmesquitaapi.domain.user.BankDetails;
 import br.com.smartmesquitaapi.domain.user.User;
 import br.com.smartmesquitaapi.domain.user.UserRepository;
 import br.com.smartmesquitaapi.infrastructure.security.TokenConfig;
-import br.com.smartmesquitaapi.infrastructure.security.dto.AuthResponse;
-import br.com.smartmesquitaapi.infrastructure.security.dto.LoginRequest;
-import br.com.smartmesquitaapi.infrastructure.security.dto.RegisterUserRequest;
+import br.com.smartmesquitaapi.infrastructure.security.dto.response.AuthResponse;
+import br.com.smartmesquitaapi.infrastructure.security.dto.request.LoginRequest;
+import br.com.smartmesquitaapi.infrastructure.security.dto.request.RegisterUserRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -113,25 +116,5 @@ public class AuthService {
                 .type("Bearer")
                 .user(userInfo)
                 .build();
-    }
-
-    // ========== EXCEPTIONS ==========
-
-    public static class EmailAlreadyExistsException extends RuntimeException {
-        public EmailAlreadyExistsException(String message) {
-            super(message);
-        }
-    }
-
-    public static class InvalidCredentialsException extends RuntimeException {
-        public InvalidCredentialsException(String message) {
-            super(message);
-        }
-    }
-
-    public static class UserInactiveException extends RuntimeException {
-        public UserInactiveException(String message) {
-            super(message);
-        }
     }
 }

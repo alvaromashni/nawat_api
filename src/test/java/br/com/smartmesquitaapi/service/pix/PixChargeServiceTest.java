@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.service.pix;
 
+import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
 import br.com.smartmesquitaapi.domain.pix.PixCharge;
 import br.com.smartmesquitaapi.domain.pix.PixChargeRepository;
 import br.com.smartmesquitaapi.domain.pix.PixChargeStatus;
@@ -7,7 +8,6 @@ import br.com.smartmesquitaapi.domain.user.BankDetails;
 import br.com.smartmesquitaapi.domain.user.PixKeyType;
 import br.com.smartmesquitaapi.domain.user.User;
 import br.com.smartmesquitaapi.domain.user.UserRepository;
-import br.com.smartmesquitaapi.service.pix.PixChargeService;
 import br.com.smartmesquitaapi.service.pix.dto.CreatePixChargeRequest;
 import br.com.smartmesquitaapi.service.pix.dto.CreatePixChargeResponse;
 import br.com.smartmesquitaapi.service.pix.exception.*;
@@ -197,7 +197,7 @@ class PixChargeServiceTest {
                 .thenReturn(150L); // Acima do limite
 
         // Act & Assert
-        RateLimitExceededException exception = assertThrows(RateLimitExceededException.class, () -> {
+        RateLimitExceededPixException exception = assertThrows(RateLimitExceededPixException.class, () -> {
             pixChargeService.createPixCharge(userId, request, "127.0.0.1");
         });
 

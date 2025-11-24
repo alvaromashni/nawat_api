@@ -1,8 +1,8 @@
 package br.com.smartmesquitaapi.api.controller;
 
-import br.com.smartmesquitaapi.infrastructure.security.dto.LoginRequest;
-import br.com.smartmesquitaapi.infrastructure.security.dto.AuthResponse;
-import br.com.smartmesquitaapi.infrastructure.security.dto.RegisterUserRequest;
+import br.com.smartmesquitaapi.infrastructure.security.dto.request.LoginRequest;
+import br.com.smartmesquitaapi.infrastructure.security.dto.response.AuthResponse;
+import br.com.smartmesquitaapi.infrastructure.security.dto.request.RegisterUserRequest;
 import br.com.smartmesquitaapi.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {

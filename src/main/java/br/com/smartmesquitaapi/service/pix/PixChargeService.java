@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.service.pix;
 
+import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
 import br.com.smartmesquitaapi.domain.pix.PixCharge;
 import br.com.smartmesquitaapi.domain.pix.PixChargeRepository;
 import br.com.smartmesquitaapi.domain.pix.PixChargeStatus;
@@ -257,7 +258,7 @@ public class PixChargeService {
 
         if (recentCharges != null && recentCharges >= MAX_CHARGES_PER_HOUR) {
             log.warn("Rate limit excedido - User: {} | Charges na última hora: {}", userId, recentCharges);
-            throw new RateLimitExceededException(
+            throw new RateLimitExceededPixException(
                     String.format("Limite de %d cobranças por hora excedido", MAX_CHARGES_PER_HOUR)
             );
         }

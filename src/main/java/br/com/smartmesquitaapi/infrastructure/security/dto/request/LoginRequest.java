@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.infrastructure.security.dto;
+package br.com.smartmesquitaapi.infrastructure.security.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

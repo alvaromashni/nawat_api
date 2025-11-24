@@ -1,8 +1,6 @@
 package br.com.smartmesquitaapi.api.exception;
 
-import br.com.smartmesquitaapi.service.AuthService;
-import br.com.smartmesquitaapi.service.pix.exception.UserInactiveException;
-import br.com.smartmesquitaapi.service.AuthService.*;
+import br.com.smartmesquitaapi.api.dto.error.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,26 +11,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 
 /**
- * Handler para exceções de autenticação
- * Adicione estas exceções ao GlobalExceptionHandler existente
+ * Handler para exceções de autenticação do Spring Security
+ * As exceções de domínio agora são tratadas pelo GlobalExceptionHandler
  */
 @RestControllerAdvice
 public class AuthExceptionHandler {
 
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex) {
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.CONFLICT.value())
-                .error("Conflict")
-                .message(ex.getMessage())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
-
-    @ExceptionHandler({InvalidCredentialsException.class, BadCredentialsException.class})
-    public ResponseEntity<ErrorResponse> handleInvalidCredentials(Exception ex) {
+    /**
+     * Trata BadCredentialsException do Spring Security
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.UNAUTHORIZED.value())
@@ -43,18 +32,9 @@ public class AuthExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    @ExceptionHandler(UserInactiveException.class)
-    public ResponseEntity<ErrorResponse> handleUserInactive(UserInactiveException ex) {
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.FORBIDDEN.value())
-                .error("Forbidden")
-                .message(ex.getMessage())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-    }
-
+    /**
+     * Trata exceções genéricas de autenticação do Spring Security
+     */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
         ErrorResponse response = ErrorResponse.builder()
@@ -65,16 +45,5 @@ public class AuthExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-    }
-
-    @lombok.Data
-    @lombok.Builder
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    static class ErrorResponse {
-        private LocalDateTime timestamp;
-        private Integer status;
-        private String error;
-        private String message;
     }
 }

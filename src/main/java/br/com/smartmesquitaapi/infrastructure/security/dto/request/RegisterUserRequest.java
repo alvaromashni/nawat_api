@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.infrastructure.security.dto;
+package br.com.smartmesquitaapi.infrastructure.security.dto.request;
 
 import br.com.smartmesquitaapi.domain.user.UserRole;
 import jakarta.validation.constraints.Email;

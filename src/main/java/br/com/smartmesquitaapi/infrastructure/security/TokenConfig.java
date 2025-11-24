@@ -13,7 +13,7 @@ import java.util.UUID;
 @Component
 public class TokenConfig {
 
-    private String secret = "senhaSecreta";
+    private String secret; // adicionar como variavel de ambiente dps / talvez de erro agora.
 
     public String generateToken(User user){
 

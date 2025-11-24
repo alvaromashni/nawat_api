@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.infrastructure.security.dto;
+package br.com.smartmesquitaapi.infrastructure.security.dto.response;
 
 import br.com.smartmesquitaapi.domain.user.UserRole;
 import lombok.AllArgsConstructor;
