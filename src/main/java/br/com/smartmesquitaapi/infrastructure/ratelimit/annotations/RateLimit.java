@@ -1,4 +1,6 @@
-package br.com.smartmesquitaapi.infrastructure.ratelimit;
+package br.com.smartmesquitaapi.infrastructure.ratelimit.annotations;
+
+import br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimitType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -32,12 +34,5 @@ public @interface RateLimit {
      * - GLOBAL: Global (todos compartilham)
      */
     RateLimitType type() default RateLimitType.USER;
-
-    enum RateLimitType {
-        USER,
-        IP,
-        USER_AND_IP,
-        GLOBAL
-    }
 
 }

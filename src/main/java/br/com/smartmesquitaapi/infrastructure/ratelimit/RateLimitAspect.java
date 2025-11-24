@@ -1,9 +1,10 @@
 package br.com.smartmesquitaapi.infrastructure.ratelimit;
 
 import br.com.smartmesquitaapi.api.exception.infrastructure.RateLimitExceededException;
-import br.com.smartmesquitaapi.service.UserContextService;
-import lombok.RequiredArgsConstructor;
+import br.com.smartmesquitaapi.infrastructure.ratelimit.annotations.RateLimit;
+import br.com.smartmesquitaapi.infrastructure.ratelimit.keygenerators.RateLimitKeyGenerator;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,26 +14,31 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Duration;
-import java.util.UUID;
+import java.util.List;
 
 /**
  * Aspect que intercepta métodos anotados com @RateLimit
  */
 @Aspect
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class RateLimitAspect {
 
     private final RateLimitService rateLimitService;
-    private final UserContextService userContextService;
+    private final List<RateLimitKeyGenerator> keyGenerators;
 
-    @Around("@annotation(br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimit)")
+    public RateLimitAspect(RateLimitService rateLimitService, List<RateLimitKeyGenerator> keyGenerators) {
+        this.rateLimitService = rateLimitService;
+        this.keyGenerators = keyGenerators;
+    }
+
+    @Around("@annotation(br.com.smartmesquitaapi.infrastructure.ratelimit.annotations.RateLimit)")
     public Object checkRateLimit(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RateLimit rateLimit = signature.getMethod().getAnnotation(RateLimit.class);
 
-        String key = buildRateLimitKey(rateLimit);
+        String baseKey = buildBaseKey(joinPoint, rateLimit);
+        String key = buildRateLimitKey(rateLimit, baseKey);
 
         if (rateLimitService.isBanned(key)) {
             throw new RateLimitExceededException(
@@ -59,30 +65,22 @@ public class RateLimitAspect {
         return joinPoint.proceed();
     }
 
-    /**
-     * Constrói a chave do rate limit baseado no tipo
-     */
-    private String buildRateLimitKey(RateLimit rateLimit) {
-        String baseKey = rateLimit.key();
+    private String buildBaseKey(JoinPoint joinPoint, RateLimit rateLimit){
 
-        switch (rateLimit.type()) {
-            case USER:
-                UUID userId = userContextService.getCurrentUserId();
-                return userId != null ? baseKey + ":" + userId : baseKey + ":anonymous";
-
-            case IP:
-                String ip = userContextService.getClientIp();
-                return baseKey + ":" + ip;
-
-            case USER_AND_IP:
-                UUID userId2 = userContextService.getCurrentUserId();
-                String ip2 = userContextService.getClientIp();
-                return baseKey + ":" + (userId2 != null ? userId2 : "anonymous") + ":" + ip2;
-
-            case GLOBAL:
-            default:
-                return baseKey;
+        if (!rateLimit.key().isEmpty()){
+            return rateLimit.key();
         }
+        return joinPoint.getSignature().toShortString();
+    }
+
+    private String buildRateLimitKey(RateLimit rateLimit, String basekey) {
+
+        for (RateLimitKeyGenerator generator : keyGenerators){
+            if (generator.supports(rateLimit.type())){
+                return generator.generateKey(basekey);
+            }
+        }
+        return basekey;
     }
 
     /**
