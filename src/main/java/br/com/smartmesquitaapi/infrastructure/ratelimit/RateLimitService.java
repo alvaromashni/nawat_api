@@ -12,10 +12,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class RateLimitService {
 
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
-    public RateLimitService(RedisTemplate<Object, Object> redisTemplate, PropertiesLoaderSupport propertiesLoaderSupport) {
+    public RateLimitService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
