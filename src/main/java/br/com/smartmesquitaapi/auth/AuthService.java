@@ -4,6 +4,7 @@ import br.com.smartmesquitaapi.api.exception.auth.EmailAlreadyExistsException;
 import br.com.smartmesquitaapi.api.exception.auth.InvalidCredentialsException;
 import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
 import br.com.smartmesquitaapi.auth.dto.request.UserInfo;
+import br.com.smartmesquitaapi.pix.exception.UserNotFoundException;
 import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.UserRepository;
@@ -40,8 +41,6 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse register(RegisterUserRequest request) {
-        log.info("Registrando novo usuário: {}", request.getEmail());
-
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException("Email já cadastrado no sistema");
         }
@@ -71,52 +70,29 @@ public class AuthService {
         String token = tokenConfig.generateToken(user);
         RefreshToken refreshToken = createRefreshToken(user.getEmail());
 
-        log.info("Usuário registrado com sucesso: {} (ID: {})", user.getEmail(), user.getUserId());
-
         return buildAuthResponse(token, refreshToken.getToken(), user);
     }
 
 
     public AuthResponse login(LoginRequest request) {
-        log.info("Tentativa de login: {}", request.getEmail());
 
-        try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getEmail(),
                             request.getPassword()
                     )
             );
-            log.info("Autenticação bem-sucedida para: {}", request.getEmail());
-
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new InvalidCredentialsException("Credenciais inválidas"));
-            log.info("Usuário encontrado: {} (ID: {})", user.getEmail(), user.getUserId());
-
             if (!user.getIsEnabled()) {
                 throw new UserInactiveException("Usuário inativo");
             }
-
-            log.info("Gerando token JWT para: {}", user.getEmail());
             String token = tokenConfig.generateToken(user);
-            log.info("Token JWT gerado com sucesso");
-
-            log.info("Criando refresh token para: {}", user.getEmail());
             RefreshToken refreshToken = createRefreshToken(user.getEmail());
-            log.info("Refresh token criado com sucesso: {}", refreshToken.getToken());
-
-            log.info("Login realizado com sucesso: {}", user.getEmail());
 
             return buildAuthResponse(token, refreshToken.getToken(), user);
-        } catch (Exception e) {
-            log.error("Erro durante o login para {}: {}", request.getEmail(), e.getMessage(), e);
-            throw e;
-        }
     }
 
-    /**
-     * Constrói o response de autenticação
-     */
     private AuthResponse buildAuthResponse(String token, String refreshToken, User user) {
         UserInfo userInfo = UserInfo.builder()
                 .id(user.getUserId())
@@ -138,7 +114,7 @@ public class AuthService {
     public RefreshToken createRefreshToken(String email){
 
         User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new RuntimeException("Erro: Usuário não encontrado no banco!"));
+                () -> new UserNotFoundException("Erro: Usuário não encontrado no banco!"));
 
         RefreshToken refreshToken = new RefreshToken();
 

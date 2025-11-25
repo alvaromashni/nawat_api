@@ -66,7 +66,6 @@ public class PixChargeService {
                 .findByUserIdAndIdempotencyKey(userId, request.getIdempotencyKey());
 
         if (existingCharge.isPresent()) {
-            log.info("Cobrança já existe (idempotência) - TxID: {}", existingCharge.get().getTxid());
             return buildResponse(existingCharge.get());
         }
 
@@ -128,9 +127,6 @@ public class PixChargeService {
         return buildResponse(pixCharge);
     }
 
-    /**
-     * Busca uma cobrança por localDonationId
-     */
     public PixChargeDto getChargeByLocalId(String localDonationId) {
         PixCharge charge = pixChargeRepository.findByLocalDonationId(localDonationId)
                 .orElseThrow(() -> new ChargeNotFoundException("Cobrança não encontrada: " + localDonationId));
@@ -138,9 +134,6 @@ public class PixChargeService {
         return mapToDto(charge);
     }
 
-    /**
-     * Busca uma cobrança por txid
-     */
     public PixChargeDto getChargeByTxid(String txid) {
         PixCharge charge = pixChargeRepository.findByTxid(txid)
                 .orElseThrow(() -> new ChargeNotFoundException("Cobrança não encontrada: " + txid));
@@ -168,9 +161,6 @@ public class PixChargeService {
         charge.confirmManually(confirmedByUserId, receiptUrl, notes);
         charge = pixChargeRepository.save(charge);
 
-        log.info("Cobrança confirmada manualmente - TxID: {} | ConfirmedBy: {}",
-                charge.getTxid(), confirmedByUserId);
-
         return mapToDto(charge);
     }
 
@@ -186,10 +176,6 @@ public class PixChargeService {
             charge.markAsExpired();
             pixChargeRepository.save(charge);
         });
-
-        if (!expiredCharges.isEmpty()) {
-            log.info("Marcadas {} cobranças como expiradas", expiredCharges.size());
-        }
 
         return expiredCharges.size();
     }
@@ -256,7 +242,6 @@ public class PixChargeService {
         Long recentCharges = pixChargeRepository.countByUserAndStatus(userId, PixChargeStatus.PENDING);
 
         if (recentCharges != null && recentCharges >= MAX_CHARGES_PER_HOUR) {
-            log.warn("Rate limit excedido - User: {} | Charges na última hora: {}", userId, recentCharges);
             throw new RateLimitExceededPixException(
                     String.format("Limite de %d cobranças por hora excedido", MAX_CHARGES_PER_HOUR)
             );
@@ -300,7 +285,6 @@ public class PixChargeService {
                     amountCents
             );
         } catch (Exception e) {
-            log.error("Erro ao gerar EMV payload", e);
             throw new QrCodeGenerationException("Erro ao gerar QR Code: " + e.getMessage(), new Throwable());
         }
     }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
      * Lista todas as cobranças de um usuário específico
      */
     @Query("SELECT pc FROM PixCharge pc WHERE pc.user.userId = :userId ORDER BY pc.createdAt DESC")
-    List<PixCharge> findByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId);
+    List<PixCharge> findByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId, Pageable pageable);
 
     /**
      * Lista cobranças por status
@@ -52,7 +53,8 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
     @Query("SELECT pc FROM PixCharge pc WHERE pc.user.userId = :userId AND pc.status = :status ORDER BY pc.createdAt DESC")
     List<PixCharge> findByUserIdAndStatusOrderByCreatedAtDesc(
             @Param("userId") UUID userId,
-            @Param("status") PixChargeStatus status
+            @Param("status") PixChargeStatus status,
+            Pageable pageable
     );
 
     /**
@@ -71,7 +73,8 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
             "ORDER BY pc.createdAt ASC")
     List<PixCharge> findOldChargesByStatus(
             @Param("status") PixChargeStatus status,
-            @Param("thresholdTime") LocalDateTime thresholdTime
+            @Param("thresholdTime") LocalDateTime thresholdTime,
+            Pageable pageable
     );
 
     /**
@@ -87,7 +90,8 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
     List<PixCharge> findPendingChargesByAmountAndTimeRange(
             @Param("amountCents") Integer amountCents,
             @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime
+            @Param("endTime") LocalDateTime endTime,
+            Pageable pageable
     );
 
     /**
@@ -103,7 +107,8 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
             "ORDER BY pc.createdAt DESC")
     List<PixCharge> findChargesInPeriod(
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
     );
 
     /**
@@ -112,7 +117,7 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
     @Query("SELECT pc FROM PixCharge pc WHERE pc.status = 'CONFIRMED_MANUAL' " +
             "AND pc.confirmedAt >= :since " +
             "ORDER BY pc.confirmedAt DESC")
-    List<PixCharge> findRecentManuallyConfirmedCharges(@Param("since") LocalDateTime since);
+    List<PixCharge> findRecentManuallyConfirmedCharges(@Param("since") LocalDateTime since, Pageable pageable);
 
     /**
      * Verifica se existe cobrança com mesmo txid
@@ -123,7 +128,7 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
      * Busca última cobrança de um "user"
      */
     @Query("SELECT pc FROM PixCharge pc WHERE pc.user.userId = :userId ORDER BY pc.createdAt DESC LIMIT 1")
-    Optional<PixCharge> findFirstByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId);
+    Optional<PixCharge> findFirstByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId, Pageable pageable);
 
     /**
      * Lista cobranças com QR expirado, mas ainda PENDING (inconsistência)
@@ -133,7 +138,8 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
             "AND pc.updatedAt < :gracePeriod")
     List<PixCharge> findStuckPendingCharges(
             @Param("now") LocalDateTime now,
-            @Param("gracePeriod") LocalDateTime gracePeriod
+            @Param("gracePeriod") LocalDateTime gracePeriod,
+            Pageable pageable
     );
 
     /**
@@ -145,6 +151,7 @@ public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
     Long sumAmountByStatusesAndPeriod(
             @Param("statuses") List<PixChargeStatus> statuses,
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
     );
 }

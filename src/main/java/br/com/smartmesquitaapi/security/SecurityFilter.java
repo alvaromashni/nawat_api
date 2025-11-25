@@ -34,27 +34,20 @@ public class SecurityFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        try{
-            String authorizesHeader = request.getHeader("Authorization");
+        String authorizesHeader = request.getHeader("Authorization");
 
-            if (Strings.isNotEmpty(authorizesHeader) && authorizesHeader.startsWith("Bearer ")) {
-                String token = authorizesHeader.substring("Bearer ".length());
-                log.info(">>> Token recebido: {}...", token.substring(0, Math.min(20, token.length())));
-
+        if (Strings.isNotEmpty(authorizesHeader) && authorizesHeader.startsWith("Bearer ")) {
+            String token = authorizesHeader.substring("Bearer ".length());
                 Optional<JWTUserData> optUser = tokenConfig.validateToken(token);
 
                 if (optUser.isPresent()) {
                     JWTUserData userData = optUser.get();
-                    log.info(">>> Token válido para userId: {}", userData.userId());
 
                     UUID userId = userData.userId();
                     Optional<User> userOpt = userRepository.findById(userId);
 
                     if (userOpt.isPresent()) {
                         User user = userOpt.get();
-
-                        log.info(">>> Usuário encontrado: {} | Role: {} | Enabled: {} | Authorities: {}",
-                                user.getEmail(), user.getRole(), user.isEnabled(), user.getAuthorities());
 
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
@@ -64,20 +57,9 @@ public class SecurityFilter extends OncePerRequestFilter {
                                 );
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                        log.info(">>> Autenticação criada e setada no contexto para: {}", user.getEmail());
-                    } else {
-                        log.warn("User não encontrado no banco: {}", userId);
                     }
-                } else {
-                    log.warn(">>> Token inválido ou expirado!");
                 }
             }
             filterChain.doFilter(request, response);
-        } catch(Exception e){
-            System.out.println(">>> ERRO NO FILTRO DE SEGURANÇA: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
     }
 }
