@@ -34,37 +34,50 @@ public class SecurityFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authorizesHeader = request.getHeader("Authorization");
+        try{
+            String authorizesHeader = request.getHeader("Authorization");
 
-        if (Strings.isNotEmpty(authorizesHeader) && authorizesHeader.startsWith("Bearer ")) {
-            String token = authorizesHeader.substring("Bearer ".length());
-            Optional<JWTUserData> optUser = tokenConfig.validateToken(token);
+            if (Strings.isNotEmpty(authorizesHeader) && authorizesHeader.startsWith("Bearer ")) {
+                String token = authorizesHeader.substring("Bearer ".length());
+                log.info(">>> Token recebido: {}...", token.substring(0, Math.min(20, token.length())));
 
-            if (optUser.isPresent()) {
-                JWTUserData userData = optUser.get();
+                Optional<JWTUserData> optUser = tokenConfig.validateToken(token);
 
-                UUID userId = userData.userId();
-                Optional<User> userOpt = userRepository.findById(userId);
+                if (optUser.isPresent()) {
+                    JWTUserData userData = optUser.get();
+                    log.info(">>> Token válido para userId: {}", userData.userId());
 
-                if (userOpt.isPresent()) {
-                    User user = userOpt.get();
+                    UUID userId = userData.userId();
+                    Optional<User> userOpt = userRepository.findById(userId);
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    user,
-                                    null,
-                                    user.getAuthorities()
-                            );
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        log.info(">>> Usuário encontrado: {} | Role: {} | Enabled: {} | Authorities: {}",
+                                user.getEmail(), user.getRole(), user.isEnabled(), user.getAuthorities());
 
-                    log.debug("User autenticado: {} (ID: {})", user.getEmail(), user.getUserId());
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        user,
+                                        null,
+                                        user.getAuthorities()
+                                );
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                        log.info(">>> Autenticação criada e setada no contexto para: {}", user.getEmail());
+                    } else {
+                        log.warn("User não encontrado no banco: {}", userId);
+                    }
                 } else {
-                    log.warn("User não encontrado no banco: {}", userId);
+                    log.warn(">>> Token inválido ou expirado!");
                 }
             }
+            filterChain.doFilter(request, response);
+        } catch(Exception e){
+            System.out.println(">>> ERRO NO FILTRO DE SEGURANÇA: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        filterChain.doFilter(request, response);
     }
 }

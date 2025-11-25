@@ -4,7 +4,10 @@ import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -39,5 +42,19 @@ public class UserController {
     public ResponseEntity<Void> updateUserByEmail(@Valid @RequestParam String email, @RequestBody User user){
         userService.updateUserByEmail(email, user);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Verifica/aprova a chave PIX de um usuário
+     * Para uso administrativo/desenvolvimento
+     */
+    @PostMapping("/{userId}/verify-pix")
+    public ResponseEntity<String> verifyPixKey(
+            @PathVariable UUID userId,
+            @RequestParam(required = false) String proofUrl,
+            @AuthenticationPrincipal User authenticatedUser
+    ) {
+        userService.verifyPixKey(userId, proofUrl);
+        return ResponseEntity.ok("Chave PIX verificada com sucesso para o usuário " + userId);
     }
 }

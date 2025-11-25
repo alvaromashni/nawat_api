@@ -21,13 +21,13 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID refreshTokenId;
 
-    @Column(name = "token", nullable = false, unique = true)
+    @Column(name = "token", nullable = false)
     String token;
 
     @Column(nullable = false)
     Instant expiryDate;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "userId")
     User user;
 }

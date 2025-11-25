@@ -76,34 +76,42 @@ public class AuthService {
         return buildAuthResponse(token, refreshToken.getToken(), user);
     }
 
-    /**
-     * Login de usuário
-     */
+
     public AuthResponse login(LoginRequest request) {
         log.info("Tentativa de login: {}", request.getEmail());
 
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            log.info("Autenticação bem-sucedida para: {}", request.getEmail());
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new InvalidCredentialsException("Credenciais inválidas"));
+            log.info("Usuário encontrado: {} (ID: {})", user.getEmail(), user.getUserId());
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new InvalidCredentialsException("Credenciais inválidas"));
+            if (!user.getIsEnabled()) {
+                throw new UserInactiveException("Usuário inativo");
+            }
 
-        if (!user.getIsEnabled()) {
-            throw new UserInactiveException("Usuário inativo");
+            log.info("Gerando token JWT para: {}", user.getEmail());
+            String token = tokenConfig.generateToken(user);
+            log.info("Token JWT gerado com sucesso");
+
+            log.info("Criando refresh token para: {}", user.getEmail());
+            RefreshToken refreshToken = createRefreshToken(user.getEmail());
+            log.info("Refresh token criado com sucesso: {}", refreshToken.getToken());
+
+            log.info("Login realizado com sucesso: {}", user.getEmail());
+
+            return buildAuthResponse(token, refreshToken.getToken(), user);
+        } catch (Exception e) {
+            log.error("Erro durante o login para {}: {}", request.getEmail(), e.getMessage(), e);
+            throw e;
         }
-
-        String token = tokenConfig.generateToken(user);
-        RefreshToken refreshToken = createRefreshToken(user.getEmail());
-
-
-        log.info("Login realizado com sucesso: {}", user.getEmail());
-
-        return buildAuthResponse(token, refreshToken.getToken(), user);
     }
 
     /**
@@ -156,7 +164,6 @@ public class AuthService {
         User user = refreshToken.getUser();
         RefreshToken newToken = createRefreshToken(user.getEmail());
         String newAccessToken = tokenConfig.generateToken(user);
-        user.setRefreshToken(newToken);
 
         refreshTokenRepository.delete(refreshToken);
         return buildAuthResponse(newAccessToken, newToken.getToken(), user);

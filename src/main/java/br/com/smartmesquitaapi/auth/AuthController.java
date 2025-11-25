@@ -39,13 +39,17 @@ public class AuthController {
     @PostMapping("/login")
     @RateLimit(limit = 5, duration = 60, unit = TimeUnit.SECONDS, type = RateLimitType.IP)
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        log.info("POST /api/auth/login - Email: {}", request.getEmail());
+        try {
+            log.info("=== CONTROLLER: POST /api/v1/auth/login - Email: {}", request.getEmail());
 
-        AuthResponse response = authService.login(request);
-        RefreshToken token = authService.createRefreshToken(request.getEmail());
-        response.setRefreshToken(token.getToken());
+            AuthResponse response = authService.login(request);
 
-        return ResponseEntity.ok(response);
+            log.info("=== CONTROLLER: Login response criado com sucesso");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("=== CONTROLLER: Erro capturado no controller: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @GetMapping("/verify")
@@ -59,6 +63,4 @@ public class AuthController {
         AuthResponse response = authService.processRefreshToken(request.getToken());
         return ResponseEntity.ok(response);
     }
-
-
 }

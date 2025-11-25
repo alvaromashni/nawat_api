@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * Controller para gerenciar cobranças PIX
  */
 @RestController
-@RequestMapping("/api/donations")
+@RequestMapping("/api/v1/donations")
 @RequiredArgsConstructor
 @Slf4j
 public class PixChargeController {

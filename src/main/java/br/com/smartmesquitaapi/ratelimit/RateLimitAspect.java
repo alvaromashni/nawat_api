@@ -34,6 +34,20 @@ public class RateLimitAspect {
 
     @Around("@annotation(br.com.smartmesquitaapi.ratelimit.annotations.RateLimit)")
     public Object checkRateLimit(ProceedingJoinPoint joinPoint) throws Throwable {
+        try {
+            log.info("=== RATELIMIT: Iniciando verificação de rate limit");
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            RateLimit rateLimit = signature.getMethod().getAnnotation(RateLimit.class);
+
+            String baseKey = buildBaseKey(joinPoint, rateLimit);
+            log.info("=== RATELIMIT: Base key: {}", baseKey);
+            String key = buildRateLimitKey(rateLimit, baseKey);
+            log.info("=== RATELIMIT: Rate limit key: {}", key);
+        } catch (Exception e) {
+            log.error("=== RATELIMIT: Erro durante verificação de rate limit: {}", e.getMessage(), e);
+            throw e;
+        }
+
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RateLimit rateLimit = signature.getMethod().getAnnotation(RateLimit.class);
 
