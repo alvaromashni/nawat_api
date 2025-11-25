@@ -1,6 +1,6 @@
 package br.com.smartmesquitaapi.api.dto;
 
-import br.com.smartmesquitaapi.domain.pix.PixChargeStatus;
+import br.com.smartmesquitaapi.pix.domain.PixChargeStatus;
 
 public record UpdateStatusRequest(
         PixChargeStatus status,

@@ -1,16 +1,17 @@
 package br.com.smartmesquitaapi.service.pix;
 
 import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
-import br.com.smartmesquitaapi.domain.pix.PixCharge;
-import br.com.smartmesquitaapi.domain.pix.PixChargeRepository;
-import br.com.smartmesquitaapi.domain.pix.PixChargeStatus;
-import br.com.smartmesquitaapi.domain.user.BankDetails;
-import br.com.smartmesquitaapi.domain.user.PixKeyType;
-import br.com.smartmesquitaapi.domain.user.User;
-import br.com.smartmesquitaapi.domain.user.UserRepository;
-import br.com.smartmesquitaapi.service.pix.dto.CreatePixChargeRequest;
-import br.com.smartmesquitaapi.service.pix.dto.CreatePixChargeResponse;
-import br.com.smartmesquitaapi.service.pix.exception.*;
+import br.com.smartmesquitaapi.pix.domain.PixCharge;
+import br.com.smartmesquitaapi.pix.PixChargeRepository;
+import br.com.smartmesquitaapi.pix.PixChargeService;
+import br.com.smartmesquitaapi.pix.domain.PixChargeStatus;
+import br.com.smartmesquitaapi.user.domain.BankDetails;
+import br.com.smartmesquitaapi.user.domain.PixKeyType;
+import br.com.smartmesquitaapi.user.domain.User;
+import br.com.smartmesquitaapi.user.UserRepository;
+import br.com.smartmesquitaapi.pix.dto.CreatePixChargeRequest;
+import br.com.smartmesquitaapi.pix.dto.CreatePixChargeResponse;
+import br.com.smartmesquitaapi.pix.exception.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

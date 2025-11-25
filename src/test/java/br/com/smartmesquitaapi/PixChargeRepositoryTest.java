@@ -1,6 +1,6 @@
 package br.com.smartmesquitaapi;
 
-import br.com.smartmesquitaapi.domain.pix.PixChargeRepository;
+import br.com.smartmesquitaapi.pix.PixChargeRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

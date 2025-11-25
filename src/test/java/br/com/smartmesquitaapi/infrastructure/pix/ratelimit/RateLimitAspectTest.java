@@ -1,11 +1,11 @@
 package br.com.smartmesquitaapi.infrastructure.pix.ratelimit;
 
 import br.com.smartmesquitaapi.api.exception.infrastructure.RateLimitExceededException;
-import br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimitAspect;
-import br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimitService;
-import br.com.smartmesquitaapi.infrastructure.ratelimit.RateLimitType;
-import br.com.smartmesquitaapi.infrastructure.ratelimit.annotations.RateLimit;
-import br.com.smartmesquitaapi.infrastructure.ratelimit.keygenerators.RateLimitKeyGenerator;
+import br.com.smartmesquitaapi.ratelimit.RateLimitAspect;
+import br.com.smartmesquitaapi.ratelimit.RateLimitService;
+import br.com.smartmesquitaapi.ratelimit.RateLimitType;
+import br.com.smartmesquitaapi.ratelimit.annotations.RateLimit;
+import br.com.smartmesquitaapi.ratelimit.keygenerators.RateLimitKeyGenerator;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.BeforeEach;

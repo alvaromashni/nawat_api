@@ -1,0 +1,10 @@
+package br.com.smartmesquitaapi.pix.exception;
+
+/**
+ * Valor inválido
+ */
+public class InvalidAmountException extends PixException {
+    public InvalidAmountException(String message) {
+        super(message);
+    }
+}

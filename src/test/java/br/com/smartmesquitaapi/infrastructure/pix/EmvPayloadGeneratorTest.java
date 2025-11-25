@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.infrastructure.pix;
 
+import br.com.smartmesquitaapi.pix.infrastructure.EmvPayloadGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
