@@ -2,15 +2,14 @@ package br.com.smartmesquitaapi.auth.dto.request;
 
 import br.com.smartmesquitaapi.user.domain.PixKeyType;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * DTO para dados bancários no registro
  */
 @Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

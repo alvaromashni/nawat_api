@@ -43,7 +43,7 @@ public class SecurityFilter extends OncePerRequestFilter {
                 if (optUser.isPresent()) {
                     JWTUserData userData = optUser.get();
 
-                    UUID userId = userData.userId();
+                    UUID userId = userData.getUserId();
                     Optional<User> userOpt = userRepository.findById(userId);
 
                     if (userOpt.isPresent()) {

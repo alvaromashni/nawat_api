@@ -40,9 +40,7 @@ public class RateLimitAspect {
             RateLimit rateLimit = signature.getMethod().getAnnotation(RateLimit.class);
 
             String baseKey = buildBaseKey(joinPoint, rateLimit);
-            log.info("=== RATELIMIT: Base key: {}", baseKey);
             String key = buildRateLimitKey(rateLimit, baseKey);
-            log.info("=== RATELIMIT: Rate limit key: {}", key);
         } catch (Exception e) {
             log.error("=== RATELIMIT: Erro durante verificação de rate limit: {}", e.getMessage(), e);
             throw e;
