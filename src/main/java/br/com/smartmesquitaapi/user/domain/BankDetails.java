@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
  * Value Object que representa os dados bancários de um usuário.
  * Embeddable - será parte da tabela users.
  */
-@Getter
-@Setter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

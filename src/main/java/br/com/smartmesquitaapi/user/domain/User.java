@@ -46,6 +46,9 @@ public class User implements UserDetails {
     @Embedded
     private BankDetails bankDetails;
 
+    @Embedded
+    private Notification notification;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

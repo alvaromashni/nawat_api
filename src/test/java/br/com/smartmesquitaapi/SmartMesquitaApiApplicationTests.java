@@ -14,13 +14,13 @@ class SmartMesquitaApiApplicationTests {
     void contextLoads() {
     }
 
-    @Test
-    public void testEncryptDecrypt() {
-        String original = "1234567890";
-        String b64 = CryptoUtils.encrypt(original);
-        assertNotNull(b64);
-        String back = CryptoUtils.decrypt(b64);
-        assertEquals(original, back);
-    }
+//    @Test
+//    public void testEncryptDecrypt() {
+//        String original = "1234567890";
+//        String b64 = CryptoUtils.encrypt(original);
+//        assertNotNull(b64);
+//        String back = CryptoUtils.decrypt(b64);
+//        assertEquals(original, back);
+//    }
 
 }

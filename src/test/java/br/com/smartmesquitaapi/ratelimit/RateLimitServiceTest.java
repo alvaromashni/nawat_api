@@ -379,7 +379,7 @@ class RateLimitServiceTest {
         String key = "user:123";
         Duration banDuration = Duration.ofHours(24);
 
-        when(valueOperations.set(anyString(), anyString(), any(Duration.class))).thenReturn(null);
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
 
         // Act
         rateLimitService.ban(key, banDuration);
@@ -395,7 +395,7 @@ class RateLimitServiceTest {
         String key = "user:123";
         Duration banDuration = Duration.ofHours(1);
 
-        when(valueOperations.set(anyString(), anyString(), any(Duration.class))).thenReturn(null);
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
 
         // Act
         rateLimitService.ban(key, banDuration);
@@ -411,8 +411,8 @@ class RateLimitServiceTest {
         String key = "user:123";
         Duration banDuration = Duration.ofHours(1);
 
-        when(valueOperations.set(anyString(), anyString(), any(Duration.class)))
-            .thenThrow(new RuntimeException("Redis error"));
+        doThrow(new RuntimeException("Redis error"))
+            .when(valueOperations).set(anyString(), anyString(), any(Duration.class));
 
         // Act & Assert - Não deve lançar exceção
         assertDoesNotThrow(() -> rateLimitService.ban(key, banDuration));
@@ -427,7 +427,7 @@ class RateLimitServiceTest {
         Duration duration1 = Duration.ofMinutes(30);
         Duration duration2 = Duration.ofDays(7);
 
-        when(valueOperations.set(anyString(), anyString(), any(Duration.class))).thenReturn(null);
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
 
         // Act
         rateLimitService.ban(key1, duration1);
@@ -577,7 +577,7 @@ class RateLimitServiceTest {
         String key = "user:123";
 
         when(redisTemplate.hasKey("banned:" + key)).thenReturn(true);
-        when(valueOperations.set(anyString(), anyString(), any(Duration.class))).thenReturn(null);
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
 
         // Act
         rateLimitService.ban(key, Duration.ofHours(1));

@@ -142,7 +142,7 @@ class UserServiceTest {
     @DisplayName("Deve deletar usuário por email com sucesso")
     void shouldDeleteUserByEmailSuccessfully() {
         // Arrange
-        doNothing().when(userRepository).deleteByEmail(anyString());
+        when(userRepository.deleteByEmail(anyString())).thenReturn(Optional.of(testUser));
 
         // Act
         userService.deleteUserByEmail("joao@example.com");
@@ -155,7 +155,7 @@ class UserServiceTest {
     @DisplayName("Deve usar método transacional para deletar usuário")
     void shouldUseTransactionalMethodToDeleteUser() {
         // Arrange
-        doNothing().when(userRepository).deleteByEmail(anyString());
+        when(userRepository.deleteByEmail(anyString())).thenReturn(Optional.of(testUser));
 
         // Act
         userService.deleteUserByEmail("joao@example.com");
@@ -306,7 +306,7 @@ class UserServiceTest {
             BankDetails details = user.getBankDetails();
             return details != null &&
                    details.getIsVerified() &&
-                   details.getVerificationProofUrl() != null &&
+                   details.getOwnershipProofUrl() != null &&
                    details.getVerifiedAt() != null;
         }));
     }
@@ -418,7 +418,7 @@ class UserServiceTest {
         // Arrange
         when(userRepository.saveAndFlush(any(User.class))).thenReturn(testUser);
         when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(testUser));
-        doNothing().when(userRepository).deleteByEmail(anyString());
+        when(userRepository.deleteByEmail(anyString())).thenReturn(Optional.of(testUser));
 
         // Act & Assert - Salvar
         userService.saveUser(testUser);

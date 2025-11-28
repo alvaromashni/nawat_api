@@ -1,4 +1,4 @@
-package br.com.smartmesquitaapi.user;
+package br.com.smartmesquitaapi.user.controller;
 
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.service.UserService;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @PreAuthorize("hasRole('ADMIN')")
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/admin/")
 public class AdminUserController {
 
     private final UserService userService;
