@@ -12,6 +12,7 @@ import br.com.smartmesquitaapi.security.TokenConfig;
 import br.com.smartmesquitaapi.auth.dto.response.AuthResponse;
 import br.com.smartmesquitaapi.auth.dto.request.LoginRequest;
 import br.com.smartmesquitaapi.auth.dto.request.RegisterUserRequest;
+import br.com.smartmesquitaapi.user.domain.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,7 @@ public class AuthService {
         }
 
         User user = new User();
+        user.setRole(UserRole.MESQUITA_OWNER);
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));

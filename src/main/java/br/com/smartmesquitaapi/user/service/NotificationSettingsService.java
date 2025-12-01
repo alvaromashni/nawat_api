@@ -7,13 +7,11 @@ import br.com.smartmesquitaapi.user.dto.NotificationsSettingsDto;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class NotificationSettingsService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public NotificationSettingsService(UserRepository userRepository) {
         this.userRepository = userRepository;

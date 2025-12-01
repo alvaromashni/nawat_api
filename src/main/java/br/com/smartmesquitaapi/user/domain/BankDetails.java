@@ -4,19 +4,15 @@ import br.com.smartmesquitaapi.config.crypto.CryptoConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Value Object que representa os dados bancários de um usuário.
- * Embeddable - será parte da tabela users.
- */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Embeddable
 @Builder
-public class BankDetails implements Serializable {
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class BankDetails {
 
     @Column(name = "bank_name", length = 100)
     private String bankName;

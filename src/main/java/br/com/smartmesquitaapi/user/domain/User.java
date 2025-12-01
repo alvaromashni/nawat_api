@@ -1,7 +1,5 @@
 package br.com.smartmesquitaapi.user.domain;
 
-import br.com.smartmesquitaapi.auth.RefreshToken;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,6 +46,12 @@ public class User implements UserDetails {
 
     @Embedded
     private Notification notification;
+
+    @Embedded
+    private Address address;
+
+    @Embedded
+    private MosqueInfo mosqueInfo;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
