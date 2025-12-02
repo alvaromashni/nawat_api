@@ -1,12 +1,15 @@
 package br.com.smartmesquitaapi.user.domain;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.Data;
 
-@Embeddable
+import java.util.UUID;
+
 @Data
+@Embeddable
 public class Address {
 
+    private UUID addressId;
     private String street;
     private String number;
     private String neighborhood;

@@ -1,7 +1,9 @@
 package br.com.smartmesquitaapi.user.domain;
 
+import br.com.smartmesquitaapi.organization.domain.Organization;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,16 +44,7 @@ public class User implements UserDetails {
     private boolean isEnabled = true;
 
     @Embedded
-    private BankDetails bankDetails;
-
-    @Embedded
     private Notification notification;
-
-    @Embedded
-    private Address address;
-
-    @Embedded
-    private MosqueInfo mosqueInfo;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -62,6 +55,10 @@ public class User implements UserDetails {
     public boolean getIsEnabled() {
         return isEnabled;
     }
+
+    @OneToOne
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
 
 // ============= USERDETAILS OVERRIDES =============
@@ -103,22 +100,11 @@ public class User implements UserDetails {
 
     // ========== MÉTODOS DE NEGÓCIO ==========
 
-    /**
-     * Verifica se o usuário tem chave PIX válida e verificada
-     */
-    public boolean hasValidPixKey() {
-        return bankDetails != null
-                && bankDetails.getPixKey() != null
-                && !bankDetails.getPixKey().isBlank()
-                && bankDetails.getIsVerified() != null
-                && bankDetails.getIsVerified();
-    }
-
-    /**
-     * Verifica se o usuário pode receber pagamentos PIX
-     */
     public boolean canReceivePayments() {
-        return isEnabled && hasValidPixKey();
+        if (organization != null) {
+            return organization.canReceivePayments();
+        }
+        return false;
     }
 
     @PrePersist

@@ -9,11 +9,5 @@ public class MosqueInfo {
 
     private String mosqueName;
     private String imaName;
-    private String phoneNumber;
-    private LocalDate foundationDate;
-    private String administratorName;
-    private String cnpj;
-    private String openingHours;
-
 
 }
