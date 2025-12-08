@@ -1,13 +1,9 @@
 package br.com.smartmesquitaapi.user.service;
 
 import br.com.smartmesquitaapi.user.UserRepository;
-import br.com.smartmesquitaapi.user.domain.Address;
-import br.com.smartmesquitaapi.user.domain.MosqueInfo;
 import br.com.smartmesquitaapi.user.domain.User;
-import br.com.smartmesquitaapi.user.dto.AddressDto;
-import br.com.smartmesquitaapi.user.dto.MosqueInfoDto;
 import br.com.smartmesquitaapi.user.dto.MosqueProfileDto;
-import br.com.smartmesquitaapi.user.mapper.MosqueMapper;
+import br.com.smartmesquitaapi.organization.mapper.OrganizationMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,9 +12,9 @@ import org.springframework.stereotype.Service;
 public class MosqueService {
 
     private final UserRepository userRepository;
-    private final MosqueMapper mosqueMapper;
+    private final OrganizationMapper mosqueMapper;
 
-    public MosqueService(UserRepository userRepository, MosqueMapper mosqueMapper) {
+    public MosqueService(UserRepository userRepository, OrganizationMapper mosqueMapper) {
         this.userRepository = userRepository;
         this.mosqueMapper = mosqueMapper;
     }
