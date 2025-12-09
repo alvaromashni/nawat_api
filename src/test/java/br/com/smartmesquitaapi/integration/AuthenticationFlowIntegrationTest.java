@@ -152,7 +152,6 @@ class AuthenticationFlowIntegrationTest {
         bankDetails.setPixKeyType(PixKeyType.EMAIL);
         bankDetails.setBankName("Caixa Econômica Federal");
         bankDetails.setAccountHolder("Comércio LTDA");
-        bankDetails.setCnpj("12345678000199");
         bankDetails.setAccountNumber("98765-4");
         mosqueDto.setBankDetails(bankDetails);
 
@@ -186,7 +185,6 @@ class AuthenticationFlowIntegrationTest {
         assertEquals(PixKeyType.EMAIL, savedBankDetails.getPixKeyType());
         assertEquals("Caixa Econômica Federal", savedBankDetails.getBankName());
         assertEquals("Comércio LTDA", savedBankDetails.getAccountHolder());
-        assertEquals("12345678000199", savedBankDetails.getCnpj());
         assertEquals("98765-4", savedBankDetails.getAccountNumber());
     }
 

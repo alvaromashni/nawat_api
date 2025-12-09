@@ -157,7 +157,6 @@ class AuthServiceTest {
         bankDetails.setPixKeyType(PixKeyType.EMAIL);
         bankDetails.setBankName("Banco do Brasil");
         bankDetails.setAccountHolder("João Silva");
-        bankDetails.setCnpj("12345678000199");
         bankDetails.setAccountNumber("12345-6");
         mosqueDto.setBankDetails(bankDetails);
 

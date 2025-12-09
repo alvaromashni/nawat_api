@@ -27,9 +27,6 @@ public class BankDetails {
     @Column(length = 500)
     private String ownershipProofUrl;
 
-    @Column(length = 18)
-    private String cnpj;
-
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private PixKeyType pixKeyType;

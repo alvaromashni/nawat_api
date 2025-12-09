@@ -5,13 +5,15 @@
 1. [Visão Geral](#visão-geral)
 2. [Autenticação](#autenticação)
 3. [Endpoints de Autenticação](#endpoints-de-autenticação)
-4. [Endpoints de Doações PIX](#endpoints-de-doações-pix)
-5. [Endpoints Administrativos - PIX](#endpoints-administrativos---pix)
-6. [Endpoints Administrativos - Usuários](#endpoints-administrativos---usuários)
-7. [Endpoints de Debug](#endpoints-de-debug)
-8. [Modelos de Dados](#modelos-de-dados)
-9. [Códigos de Status HTTP](#códigos-de-status-http)
-10. [Rate Limiting](#rate-limiting)
+4. [Endpoints de Organizações](#endpoints-de-organizações)
+5. [Endpoints de Doações PIX](#endpoints-de-doações-pix)
+6. [Endpoints Administrativos - PIX](#endpoints-administrativos---pix)
+7. [Endpoints Administrativos - Usuários](#endpoints-administrativos---usuários)
+8. [Endpoints de Debug](#endpoints-de-debug)
+9. [Modelos de Dados](#modelos-de-dados)
+10. [Códigos de Status HTTP](#códigos-de-status-http)
+11. [Rate Limiting](#rate-limiting)
+12. [Changelog](#changelog)
 
 ---
 
@@ -237,6 +239,308 @@ Gera um novo par de tokens usando o refresh token.
     "hasPixKey": true
   }
 }
+```
+
+---
+
+## Endpoints de Organizações
+
+**Autenticação:** Todos os endpoints requerem Bearer Token (usuário autenticado)
+
+### 4.1. Obter Perfil da Organização
+
+Retorna o perfil completo da organização associada ao usuário autenticado.
+
+**Endpoint:** `GET /api/v1/users/me/organization-profile`
+
+**Autenticação:** Requerida (Bearer Token - ORG_OWNER)
+
+**Response (200 OK) - Mosque:**
+
+```json
+{
+  "organizationDto": {
+    "orgName": "Mesquita Central",
+    "phoneNumber": "+5511987654321",
+    "foundationDate": "2010-05-15",
+    "administratorName": "João Silva",
+    "cnpj": "12345678000199",
+    "openingHours": "Segunda a Sexta: 5h-22h | Sábado e Domingo: 5h-23h",
+    "bankDetails": {
+      "pixKey": "12345678000199",
+      "pixKeyType": "CNPJ",
+      "bankName": "Banco do Brasil",
+      "accountHolder": "Mesquita Central",
+      "accountNumber": "12345-6",
+      "agency": "0001",
+      "isVerified": true,
+      "verifiedAt": "2025-11-26T10:00:00"
+    },
+    "addressDto": {
+      "street": "Rua das Flores",
+      "number": "123",
+      "neighborhood": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipcode": "01234-567",
+      "complement": "Próximo ao mercado"
+    },
+    "imaName": "Ima Ahmed"
+  },
+  "notificationsSettingsDto": {
+    "emailNotifications": true,
+    "smsNotifications": false,
+    "pushNotifications": true
+  }
+}
+```
+
+**Response (200 OK) - Church:**
+
+```json
+{
+  "organizationDto": {
+    "orgName": "Igreja São Francisco",
+    "phoneNumber": "+5511876543210",
+    "foundationDate": "1995-08-20",
+    "administratorName": "Padre Miguel",
+    "cnpj": "98765432000188",
+    "openingHours": "Segunda a Domingo: 6h-20h",
+    "bankDetails": {
+      "pixKey": "igreja@saofrancisco.com.br",
+      "pixKeyType": "EMAIL",
+      "bankName": "Caixa Econômica Federal",
+      "accountHolder": "Igreja São Francisco",
+      "accountNumber": "98765-4",
+      "agency": "0123",
+      "isVerified": true,
+      "verifiedAt": "2025-11-25T14:30:00"
+    },
+    "addressDto": {
+      "street": "Avenida Principal",
+      "number": "456",
+      "neighborhood": "Jardim Paulista",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipcode": "04567-890"
+    },
+    "priestName": "Padre Miguel"
+  },
+  "notificationsSettingsDto": {
+    "emailNotifications": true,
+    "smsNotifications": true,
+    "pushNotifications": false
+  }
+}
+```
+
+**Response (404 Not Found):**
+
+```json
+{
+  "timestamp": "2025-12-09T16:00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Usuário não possui organização associada",
+  "path": "/api/v1/users/me/organization-profile"
+}
+```
+
+---
+
+### 4.2. Atualizar Perfil da Organização
+
+Atualiza os dados da organização do usuário autenticado.
+
+**Endpoint:** `PUT /api/v1/users/me/organization-profile`
+
+**Autenticação:** Requerida (Bearer Token - ORG_OWNER)
+
+**Request Body (Mosque):**
+
+```json
+{
+  "organizationDto": {
+    "orgName": "Mesquita Central Atualizada",
+    "phoneNumber": "+5511987654321",
+    "foundationDate": "2010-05-15",
+    "administratorName": "João Silva Santos",
+    "cnpj": "12345678000199",
+    "openingHours": "Segunda a Domingo: 5h-23h",
+    "bankDetails": {
+      "pixKey": "12345678000199",
+      "pixKeyType": "CNPJ",
+      "bankName": "Banco do Brasil",
+      "accountHolder": "Mesquita Central",
+      "accountNumber": "12345-6",
+      "agency": "0001"
+    },
+    "addressDto": {
+      "street": "Rua das Flores",
+      "number": "123",
+      "neighborhood": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipcode": "01234-567",
+      "complement": "Próximo ao mercado municipal"
+    },
+    "imaName": "Ima Ahmed Ali"
+  },
+  "notificationsSettingsDto": {
+    "emailNotifications": true,
+    "smsNotifications": true,
+    "pushNotifications": true
+  }
+}
+```
+
+**Request Body (Church):**
+
+```json
+{
+  "organizationDto": {
+    "orgName": "Igreja São Francisco de Assis",
+    "phoneNumber": "+5511876543210",
+    "foundationDate": "1995-08-20",
+    "administratorName": "Padre Miguel",
+    "cnpj": "98765432000188",
+    "openingHours": "Segunda a Domingo: 6h-21h",
+    "bankDetails": {
+      "pixKey": "igreja@saofrancisco.com.br",
+      "pixKeyType": "EMAIL",
+      "bankName": "Caixa Econômica Federal",
+      "accountHolder": "Igreja São Francisco",
+      "accountNumber": "98765-4",
+      "agency": "0123"
+    },
+    "addressDto": {
+      "street": "Avenida Principal",
+      "number": "456",
+      "neighborhood": "Jardim Paulista",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipcode": "04567-890"
+    },
+    "priestName": "Padre Miguel Santos"
+  },
+  "notificationsSettingsDto": {
+    "emailNotifications": true,
+    "smsNotifications": true,
+    "pushNotifications": false
+  }
+}
+```
+
+**Campos Obrigatórios:**
+
+- `organizationDto.orgName` (string): Nome da organização
+- `organizationDto.administratorName` (string): Nome do administrador
+- `organizationDto.cnpj` (string, 14 dígitos): CNPJ válido com dígitos verificadores
+- Para Mosque: `organizationDto.imaName` (string): Nome do Imã
+- Para Church: `organizationDto.priestName` (string): Nome do Padre
+
+**Campos Opcionais:**
+
+- `organizationDto.phoneNumber` (string): Telefone (formato internacional)
+- `organizationDto.foundationDate` (date): Data de fundação
+- `organizationDto.openingHours` (string): Horário de funcionamento
+- `organizationDto.bankDetails` (object): Dados bancários
+- `organizationDto.addressDto` (object): Endereço completo
+- `notificationsSettingsDto` (object): Configurações de notificação
+
+**Validações Automáticas:**
+
+- CNPJ deve ter 14 dígitos numéricos
+- CNPJ deve ser válido (verificação de dígitos)
+- Data de fundação não pode ser no futuro
+- Telefone deve estar em formato válido (regex: `^\\+?[1-9]\\d{1,14}$`)
+
+**Response (200 OK):**
+
+```
+(Sem conteúdo - apenas status 200)
+```
+
+**Response (400 Bad Request) - CNPJ Inválido:**
+
+```json
+{
+  "timestamp": "2025-12-09T16:00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "CNPJ inválido: 12345678000190",
+  "path": "/api/v1/users/me/organization-profile"
+}
+```
+
+**Response (400 Bad Request) - Dados Obrigatórios:**
+
+```json
+{
+  "timestamp": "2025-12-09T16:00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Nome da organização é obrigatório",
+  "path": "/api/v1/users/me/organization-profile"
+}
+```
+
+**Response (404 Not Found):**
+
+```json
+{
+  "timestamp": "2025-12-09T16:00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Usuário não possui organização associada",
+  "path": "/api/v1/users/me/organization-profile"
+}
+```
+
+---
+
+### 4.3. Obter Configurações de Notificação
+
+Retorna as configurações de notificação do usuário.
+
+**Endpoint:** `GET /api/v1/users/me/notification-settings`
+
+**Autenticação:** Requerida (Bearer Token)
+
+**Response (200 OK):**
+
+```json
+{
+  "emailNotifications": true,
+  "smsNotifications": false,
+  "pushNotifications": true
+}
+```
+
+---
+
+### 4.4. Atualizar Configurações de Notificação
+
+Atualiza as preferências de notificação do usuário.
+
+**Endpoint:** `PUT /api/v1/users/me/notification-settings`
+
+**Autenticação:** Requerida (Bearer Token)
+
+**Request Body:**
+
+```json
+{
+  "emailNotifications": true,
+  "smsNotifications": true,
+  "pushNotifications": false
+}
+```
+
+**Response (200 OK):**
+
+```
+(Sem conteúdo - apenas status 200)
 ```
 
 ---
@@ -990,4 +1294,85 @@ Authorization: Bearer {staff_token}
 Para dúvidas ou problemas com a API, entre em contato com a equipe de desenvolvimento.
 
 **Versão da API:** v1
-**Última Atualização:** 26/11/2025
+**Última Atualização:** 09/12/2025
+
+---
+
+## Changelog
+
+### v1.1.0 - 09/12/2025
+
+#### ✨ Novidades
+
+**Endpoints de Organizações:**
+- ✅ **Adicionado**: `GET /api/v1/users/me/organization-profile` - Obter perfil da organização
+- ✅ **Adicionado**: `PUT /api/v1/users/me/organization-profile` - Atualizar perfil da organização
+- ✅ **Adicionado**: `GET /api/v1/users/me/notification-settings` - Obter configurações de notificação
+- ✅ **Adicionado**: `PUT /api/v1/users/me/notification-settings` - Atualizar configurações de notificação
+
+**Suporte Multi-Organização:**
+- ✅ Suporte completo para **Mesquitas** (Mosque) com campo `imaName`
+- ✅ Suporte completo para **Igrejas** (Church) com campo `priestName`
+- ✅ Herança polimórfica com estratégia JOINED
+
+**Validações:**
+- ✅ Validação de CNPJ com dígitos verificadores
+- ✅ Validação de formato de telefone internacional
+- ✅ Validação de data de fundação (não pode ser futura)
+- ✅ Validação de campos obrigatórios (nome, administrador, CNPJ)
+
+**Exceções Customizadas:**
+- ✅ `OrganizationNotFoundException` (404)
+- ✅ `InvalidCnpjException` (400)
+- ✅ `InvalidOrganizationDataException` (400)
+- ✅ `OrganizationAlreadyExistsException` (409)
+
+**Repositório:**
+- ✅ Criado `OrganizationRepository` com queries otimizadas
+- ✅ Busca por CNPJ, cidade, estado, nome
+- ✅ Filtro de organizações ativas
+- ✅ Filtro de organizações aptas a receber pagamentos
+
+#### 🔧 Alterações
+
+**BREAKING CHANGES:**
+- ⚠️ **Renomeado**: Endpoint `/api/v1/users/me/mosque-profile` → `/api/v1/users/me/organization-profile`
+- ⚠️ **Removido**: Campo `cnpj` de `BankDetails` (agora está apenas em `Organization`)
+
+**Melhorias:**
+- ✅ Método `getMosqueProfile()` renomeado para `getOrganizationProfile()`
+- ✅ Método `updateMosqueProfile()` renomeado para `updateOrganizationProfile()`
+- ✅ Mapper `OrganizationMapper` com método `updateOrganizationFromDto()` corrigido
+- ✅ Relacionamento User-Organization com cascade e helper methods
+- ✅ Métodos helper em User: `getBankDetails()`, `hasValidPixKey()`
+
+**Correções:**
+- ✅ Corrigido modificador de acesso em `Mosque.imaName` (agora é `private`)
+- ✅ Corrigido erro de coluna duplicada `cnpj` no mapeamento JPA
+- ✅ Corrigido assinatura do método `updateUserFromDto` no mapper
+
+#### 📚 Documentação
+
+- ✅ Adicionada seção completa de **Endpoints de Organizações**
+- ✅ Documentados 4 novos endpoints
+- ✅ Exemplos de request/response para Mosque e Church
+- ✅ Documentação de validações e exceções
+- ✅ Adicionado changelog com histórico de versões
+
+---
+
+### v1.0.0 - 26/11/2025
+
+#### Lançamento Inicial
+
+- ✅ Autenticação JWT com refresh tokens
+- ✅ Endpoints de doações PIX
+- ✅ Geração de QR Codes dinâmicos
+- ✅ Rate limiting por IP e usuário
+- ✅ Confirmação manual de pagamentos
+- ✅ Endpoints administrativos
+- ✅ Endpoints de debug
+
+---
+
+**Total de Endpoints:** 24 (4 novos na v1.1.0)
