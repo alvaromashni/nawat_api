@@ -254,9 +254,9 @@ O arquivo `src/main/resources/application.properties` contém as configurações
 spring.application.name=smartMesquitaApi
 
 # Database
-spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5433/smartMesquita}
+spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5433/seudb}
 spring.datasource.username=${DATABASE_USERNAME:postgres}
-spring.datasource.password=${DATABASE_PASSWORD:Alvinho@25}
+spring.datasource.password=${DATABASE_PASSWORD:suasenha}
 spring.jpa.hibernate.ddl-auto=create
 
 # JWT
