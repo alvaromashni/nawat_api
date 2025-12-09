@@ -60,7 +60,7 @@ class AuthControllerIntegrationTest {
         request.setName("João Silva");
         request.setEmail("joao@example.com");
         request.setPassword("senha123");
-        request.setRole(UserRole.USER);
+        request.setOrganization(null); // Sem organização
 
         AuthResponse mockResponse = AuthResponse.builder()
             .token("jwt.token.here")
@@ -88,7 +88,6 @@ class AuthControllerIntegrationTest {
         request.setName("João Silva");
         // Email ausente
         request.setPassword("senha123");
-        request.setRole(UserRole.USER);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/auth/register")
@@ -237,7 +236,6 @@ class AuthControllerIntegrationTest {
         request.setName("João Silva");
         request.setEmail("email-invalido");
         request.setPassword("senha123");
-        request.setRole(UserRole.USER);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/auth/register")
@@ -254,7 +252,6 @@ class AuthControllerIntegrationTest {
         request.setName("João Silva");
         request.setEmail("joao@example.com");
         request.setPassword("senha123");
-        request.setRole(UserRole.USER);
 
         AuthResponse mockResponse = AuthResponse.builder()
             .token("jwt.token.here")
@@ -296,7 +293,6 @@ class AuthControllerIntegrationTest {
         request.setName("João Silva");
         request.setEmail("joao@example.com");
         request.setPassword("senha123");
-        request.setRole(UserRole.USER);
 
         AuthResponse mockResponse = AuthResponse.builder()
             .token("jwt.token.here")
@@ -377,7 +373,6 @@ class AuthControllerIntegrationTest {
         request.setName("João Silva");
         request.setEmail("joao@example.com");
         request.setPassword("senha123");
-        request.setRole(UserRole.USER);
 
         AuthResponse mockResponse = AuthResponse.builder()
             .token("jwt.token.here")

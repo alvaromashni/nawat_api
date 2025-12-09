@@ -13,9 +13,10 @@ public enum UserRole {
     STAFF,
 
     /**
-     * Responsável pela mesquita/instituição (recebe doações)
+     * Responsável pela instituição (recebe doações)
      */
-    MESQUITA_OWNER,
+    ORG_OWNER,
+
 
     /**
      * Usuário comum (acesso limitado)
@@ -47,7 +48,7 @@ public enum UserRole {
      * Verifica se pode receber pagamentos
      */
     public boolean canReceivePayments() {
-        return this == MESQUITA_OWNER;
+        return this == ORG_OWNER;
     }
 
 }

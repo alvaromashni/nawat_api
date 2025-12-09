@@ -4,8 +4,11 @@ import br.com.smartmesquitaapi.api.exception.auth.EmailAlreadyExistsException;
 import br.com.smartmesquitaapi.api.exception.auth.InvalidCredentialsException;
 import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
 import br.com.smartmesquitaapi.auth.dto.request.UserInfo;
+import br.com.smartmesquitaapi.organization.domain.Church;
+import br.com.smartmesquitaapi.organization.domain.Mosque;
+import br.com.smartmesquitaapi.organization.domain.Organization;
+import br.com.smartmesquitaapi.organization.mapper.OrganizationMapper;
 import br.com.smartmesquitaapi.pix.exception.UserNotFoundException;
-import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.UserRepository;
 import br.com.smartmesquitaapi.security.TokenConfig;
@@ -36,38 +39,28 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenConfig tokenConfig;
     private final AuthenticationManager authenticationManager;
+    private final OrganizationMapper organizationMapper;
 
-    /**
-     * Registrar novo usuário
-     */
+
     @Transactional
     public AuthResponse register(RegisterUserRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException("Email já cadastrado no sistema");
+        if (userRepository.existsByEmail(request.getEmail())){
+            throw new EmailAlreadyExistsException("Email já cadastrado no sistema.");
         }
+        Organization organization = organizationMapper.toEntity(request.getOrganization());
 
         User user = new User();
-        user.setRole(UserRole.MESQUITA_OWNER);
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
         user.setEnabled(true);
 
-        if (request.getBankDetails() != null) {
-            BankDetails bankDetails = new BankDetails();
-            bankDetails.setPixKey(request.getBankDetails().getPixKey());
-            bankDetails.setPixKeyType(request.getBankDetails().getPixKeyType());
-            bankDetails.setBankName(request.getBankDetails().getBankName());
-            bankDetails.setAccountHolder(request.getBankDetails().getAccountHolder());
-            bankDetails.setCnpj(request.getBankDetails().getCnpj());
-            bankDetails.setAccountNumber(request.getBankDetails().getAccountNumber());
-            bankDetails.setIsVerified(false);
-
-            user.setBankDetails(bankDetails);
+        if (organization instanceof Mosque || organization instanceof Church){
+            user.setRole(UserRole.ORG_OWNER);
         }
 
-        user = userRepository.save(user);
+        user.setOrganization(organization);
+        userRepository.save(user);
 
         String token = tokenConfig.generateToken(user);
         RefreshToken refreshToken = createRefreshToken(user.getEmail());
@@ -96,13 +89,14 @@ public class AuthService {
     }
 
     private AuthResponse buildAuthResponse(String token, String refreshToken, User user) {
+
         UserInfo userInfo = UserInfo.builder()
                 .id(user.getUserId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .isActive(user.getIsEnabled())
-                .hasPixKey(user.getBankDetails() != null && user.getBankDetails().getPixKey() != null)
+                .hasPixKey(user.getOrganization() != null && user.getOrganization().hasValidPixKey())
                 .build();
 
         return AuthResponse.builder()

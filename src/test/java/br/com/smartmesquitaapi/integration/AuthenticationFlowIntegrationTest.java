@@ -3,10 +3,11 @@ package br.com.smartmesquitaapi.integration;
 import br.com.smartmesquitaapi.auth.AuthService;
 import br.com.smartmesquitaapi.auth.RefreshToken;
 import br.com.smartmesquitaapi.auth.RefreshTokenRepository;
-import br.com.smartmesquitaapi.auth.dto.request.BankDetailsRequest;
 import br.com.smartmesquitaapi.auth.dto.request.LoginRequest;
 import br.com.smartmesquitaapi.auth.dto.request.RegisterUserRequest;
 import br.com.smartmesquitaapi.auth.dto.response.AuthResponse;
+import br.com.smartmesquitaapi.organization.domain.Mosque;
+import br.com.smartmesquitaapi.organization.dto.MosqueDto;
 import br.com.smartmesquitaapi.security.TokenConfig;
 import br.com.smartmesquitaapi.user.UserRepository;
 import br.com.smartmesquitaapi.user.domain.BankDetails;
@@ -70,7 +71,7 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Maria Silva");
         registerRequest.setEmail("maria@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
+        registerRequest.setOrganization(null); // Sem organização
 
         // Act - Registrar
         AuthResponse registerResponse = authService.register(registerRequest);
@@ -139,36 +140,47 @@ class AuthenticationFlowIntegrationTest {
     }
 
     @Test
-    @DisplayName("Deve registrar usuário com dados bancários completos")
-    void shouldRegisterUserWithCompleteBankDetails() {
+    @DisplayName("Deve registrar usuário com organização e dados bancários completos")
+    void shouldRegisterUserWithOrganizationAndBankDetails() {
         // Arrange
-        BankDetailsRequest bankDetails = new BankDetailsRequest();
+        MosqueDto mosqueDto = new MosqueDto();
+        mosqueDto.setOrgName("Mesquita Central");
+        mosqueDto.setImaName("Ima Silva");
+
+        BankDetails bankDetails = new BankDetails();
         bankDetails.setPixKey("comercio@example.com");
         bankDetails.setPixKeyType(PixKeyType.EMAIL);
         bankDetails.setBankName("Caixa Econômica Federal");
         bankDetails.setAccountHolder("Comércio LTDA");
         bankDetails.setCnpj("12345678000199");
         bankDetails.setAccountNumber("98765-4");
+        mosqueDto.setBankDetails(bankDetails);
 
         RegisterUserRequest registerRequest = new RegisterUserRequest();
         registerRequest.setName("Comércio LTDA");
         registerRequest.setEmail("comercio@example.com");
         registerRequest.setPassword("senhaSegura123");
-        registerRequest.setRole(UserRole.USER);
-        registerRequest.setBankDetails(bankDetails);
+        registerRequest.setOrganization(mosqueDto);
 
         // Act
         AuthResponse response = authService.register(registerRequest);
 
         // Assert
         assertNotNull(response);
-        assertTrue(response.getUser().getHasPixKey());
+        assertEquals(UserRole.ORG_OWNER, response.getUser().getRole());
 
         // Verificar no banco de dados
         Optional<User> savedUser = userRepository.findByEmail("comercio@example.com");
         assertTrue(savedUser.isPresent());
+        assertEquals(UserRole.ORG_OWNER, savedUser.get().getRole());
 
-        BankDetails savedBankDetails = savedUser.get().getBankDetails();
+        assertNotNull(savedUser.get().getOrganization());
+        Mosque savedMosque = (Mosque) savedUser.get().getOrganization();
+        assertNotNull(savedMosque);
+        assertEquals("Mesquita Central", savedMosque.getOrgName());
+        assertEquals("Ima Silva", savedMosque.getImaName());
+
+        BankDetails savedBankDetails = savedMosque.getBankDetails();
         assertNotNull(savedBankDetails);
         assertEquals("comercio@example.com", savedBankDetails.getPixKey());
         assertEquals(PixKeyType.EMAIL, savedBankDetails.getPixKeyType());
@@ -176,7 +188,6 @@ class AuthenticationFlowIntegrationTest {
         assertEquals("Comércio LTDA", savedBankDetails.getAccountHolder());
         assertEquals("12345678000199", savedBankDetails.getCnpj());
         assertEquals("98765-4", savedBankDetails.getAccountNumber());
-        assertFalse(savedBankDetails.getIsVerified()); // Não verificado por padrão
     }
 
     @Test
@@ -187,7 +198,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Pedro Santos");
         registerRequest.setEmail("pedro@example.com");
         registerRequest.setPassword("senhaCorreta");
-        registerRequest.setRole(UserRole.USER);
 
         authService.register(registerRequest);
 
@@ -210,7 +220,6 @@ class AuthenticationFlowIntegrationTest {
         firstRequest.setName("Primeiro Usuário");
         firstRequest.setEmail("duplicado@example.com");
         firstRequest.setPassword("senha123");
-        firstRequest.setRole(UserRole.USER);
 
         authService.register(firstRequest);
 
@@ -219,7 +228,6 @@ class AuthenticationFlowIntegrationTest {
         duplicateRequest.setName("Segundo Usuário");
         duplicateRequest.setEmail("duplicado@example.com");
         duplicateRequest.setPassword("outraSenha");
-        duplicateRequest.setRole(UserRole.USER);
 
         // Act & Assert
         assertThrows(Exception.class, () -> {
@@ -235,7 +243,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Ana Costa");
         registerRequest.setEmail("ana@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
 
         // Act
         AuthResponse response = authService.register(registerRequest);
@@ -259,7 +266,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Carlos Eduardo");
         registerRequest.setEmail("carlos@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
 
         AuthResponse registerResponse = authService.register(registerRequest);
         String oldRefreshToken = registerResponse.getRefreshToken();
@@ -284,7 +290,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Laura Mendes");
         registerRequest.setEmail("laura@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
 
         // Act
         AuthResponse response = authService.register(registerRequest);
@@ -307,7 +312,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Roberto Alves");
         registerRequest.setEmail("roberto@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
 
         authService.register(registerRequest);
 
@@ -339,7 +343,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Fernanda Lima");
         registerRequest.setEmail("fernanda@example.com");
         registerRequest.setPassword("minhaSenha123");
-        registerRequest.setRole(UserRole.USER);
 
         // Act
         authService.register(registerRequest);
@@ -356,38 +359,41 @@ class AuthenticationFlowIntegrationTest {
     }
 
     @Test
-    @DisplayName("Deve criar usuários com diferentes roles (USER e ADMIN)")
+    @DisplayName("Deve criar usuários com diferentes roles (USER e ORG_OWNER)")
     void shouldCreateUsersWithDifferentRoles() {
         // Arrange & Act - Criar usuário comum
         RegisterUserRequest userRequest = new RegisterUserRequest();
         userRequest.setName("Usuário Comum");
         userRequest.setEmail("user@example.com");
         userRequest.setPassword("senha123");
-        userRequest.setRole(UserRole.USER);
 
         AuthResponse userResponse = authService.register(userRequest);
 
-        // Arrange & Act - Criar usuário admin
-        RegisterUserRequest adminRequest = new RegisterUserRequest();
-        adminRequest.setName("Administrador");
-        adminRequest.setEmail("admin@example.com");
-        adminRequest.setPassword("senha123");
-        adminRequest.setRole(UserRole.ADMIN);
+        // Arrange & Act - Criar usuário ORG_OWNER com organização
+        MosqueDto mosqueDto = new MosqueDto();
+        mosqueDto.setOrgName("Mesquita Admin");
+        mosqueDto.setImaName("Ima Admin");
 
-        AuthResponse adminResponse = authService.register(adminRequest);
+        RegisterUserRequest orgOwnerRequest = new RegisterUserRequest();
+        orgOwnerRequest.setName("Administrador");
+        orgOwnerRequest.setEmail("admin@example.com");
+        orgOwnerRequest.setPassword("senha123");
+        orgOwnerRequest.setOrganization(mosqueDto);
+
+        AuthResponse orgOwnerResponse = authService.register(orgOwnerRequest);
 
         // Assert
         assertEquals(UserRole.USER, userResponse.getUser().getRole());
-        assertEquals(UserRole.ADMIN, adminResponse.getUser().getRole());
+        assertEquals(UserRole.ORG_OWNER, orgOwnerResponse.getUser().getRole());
 
         // Verificar no banco
         Optional<User> savedUser = userRepository.findByEmail("user@example.com");
-        Optional<User> savedAdmin = userRepository.findByEmail("admin@example.com");
+        Optional<User> savedOrgOwner = userRepository.findByEmail("admin@example.com");
 
         assertTrue(savedUser.isPresent());
-        assertTrue(savedAdmin.isPresent());
+        assertTrue(savedOrgOwner.isPresent());
         assertEquals(UserRole.USER, savedUser.get().getRole());
-        assertEquals(UserRole.ADMIN, savedAdmin.get().getRole());
+        assertEquals(UserRole.ORG_OWNER, savedOrgOwner.get().getRole());
     }
 
     @Test
@@ -398,7 +404,6 @@ class AuthenticationFlowIntegrationTest {
         registerRequest.setName("Sessão Teste");
         registerRequest.setEmail("sessao@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
 
         AuthResponse initialResponse = authService.register(registerRequest);
         String currentRefreshToken = initialResponse.getRefreshToken();

@@ -1,9 +1,8 @@
 package br.com.smartmesquitaapi.user.controller;
 
-import br.com.smartmesquitaapi.user.domain.User;
-import br.com.smartmesquitaapi.user.dto.MosqueProfileDto;
+import br.com.smartmesquitaapi.user.dto.OrganizationProfileDto;
 import br.com.smartmesquitaapi.user.dto.NotificationsSettingsDto;
-import br.com.smartmesquitaapi.user.service.MosqueService;
+import br.com.smartmesquitaapi.user.service.OrganizationService;
 import br.com.smartmesquitaapi.user.service.NotificationSettingsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +14,9 @@ import static org.springframework.http.ResponseEntity.ok;
 public class MeController {
 
     private final NotificationSettingsService notificationSettingsService;
-    private final MosqueService mosqueService;
+    private final OrganizationService mosqueService;
 
-    public MeController(NotificationSettingsService notificationSettingsService, MosqueService mosqueService) {
+    public MeController(NotificationSettingsService notificationSettingsService, OrganizationService mosqueService) {
         this.notificationSettingsService = notificationSettingsService;
         this.mosqueService = mosqueService;
     }
@@ -35,13 +34,13 @@ public class MeController {
     }
 
     @GetMapping("/mosque-profile")
-    public ResponseEntity<MosqueProfileDto> getMosqueProfile(){
-        MosqueProfileDto mosqueProfileDto = mosqueService.getMosqueProfile();
+    public ResponseEntity<OrganizationProfileDto> getMosqueProfile(){
+        OrganizationProfileDto mosqueProfileDto = mosqueService.getMosqueProfile();
         return ResponseEntity.ok().body(mosqueProfileDto);
     }
 
     @PutMapping("/mosque-profile")
-    public ResponseEntity<Void> updateMosqueProfile(@RequestBody MosqueProfileDto dto){
+    public ResponseEntity<Void> updateMosqueProfile(@RequestBody OrganizationProfileDto dto){
         mosqueService.updateMosqueProfile(dto);
         return ResponseEntity.ok().build();
     }

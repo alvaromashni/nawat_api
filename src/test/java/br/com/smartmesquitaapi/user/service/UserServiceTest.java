@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.user.service;
 
+import br.com.smartmesquitaapi.organization.domain.Mosque;
 import br.com.smartmesquitaapi.user.UserRepository;
 import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.PixKeyType;
@@ -31,6 +32,7 @@ class UserServiceTest {
     private UserService userService;
 
     private User testUser;
+    private Mosque testMosque;
     private BankDetails bankDetails;
 
     @BeforeEach
@@ -45,15 +47,21 @@ class UserServiceTest {
         bankDetails.setAccountNumber("12345-6");
         bankDetails.setIsVerified(false);
 
+        // Configurar organização de teste
+        testMosque = new Mosque();
+        testMosque.setOrgName("Mesquita Teste");
+        testMosque.setImaName("Ima Teste");
+        testMosque.setBankDetails(bankDetails);
+
         // Configurar usuário de teste
         testUser = new User();
         testUser.setUserId(UUID.randomUUID());
         testUser.setName("João Silva");
         testUser.setEmail("joao@example.com");
         testUser.setPassword("encodedPassword123");
-        testUser.setRole(UserRole.USER);
+        testUser.setRole(UserRole.ORG_OWNER);
         testUser.setEnabled(true);
-        testUser.setBankDetails(bankDetails);
+        testUser.setOrganization(testMosque);
     }
 
     // ==================== TESTES DE SAVE USER ====================
@@ -122,8 +130,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar usuário com dados bancários ao buscar por email")
-    void shouldReturnUserWithBankDetailsWhenGettingByEmail() {
+    @DisplayName("Deve retornar usuário com organização ao buscar por email")
+    void shouldReturnUserWithOrganizationWhenGettingByEmail() {
         // Arrange
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
 
@@ -131,9 +139,11 @@ class UserServiceTest {
         User result = userService.getUserByEmail("joao@example.com");
 
         // Assert
-        assertNotNull(result.getBankDetails());
-        assertEquals("joao@example.com", result.getBankDetails().getPixKey());
-        assertEquals(PixKeyType.EMAIL, result.getBankDetails().getPixKeyType());
+        assertNotNull(result.getOrganization());
+        assertEquals("Mesquita Teste", result.getOrganization().getOrgName());
+        assertNotNull(result.getOrganization().getBankDetails());
+        assertEquals("joao@example.com", result.getOrganization().getBankDetails().getPixKey());
+        assertEquals(PixKeyType.EMAIL, result.getOrganization().getBankDetails().getPixKeyType());
     }
 
     // ==================== TESTES DE DELETE USER BY EMAIL ====================
@@ -303,7 +313,7 @@ class UserServiceTest {
         // Assert
         verify(userRepository).findById(testUser.getUserId());
         verify(userRepository).saveAndFlush(argThat(user -> {
-            BankDetails details = user.getBankDetails();
+            BankDetails details = user.getOrganization().getBankDetails();
             return details != null &&
                    details.getIsVerified() &&
                    details.getOwnershipProofUrl() != null &&
@@ -323,7 +333,7 @@ class UserServiceTest {
 
         // Assert
         verify(userRepository).saveAndFlush(argThat(user -> {
-            BankDetails details = user.getBankDetails();
+            BankDetails details = user.getOrganization().getBankDetails();
             return details != null && details.getIsVerified();
         }));
     }
@@ -346,10 +356,27 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao verificar PIX de usuário sem dados bancários")
-    void shouldThrowExceptionWhenVerifyingPixForUserWithoutBankDetails() {
+    @DisplayName("Deve lançar exceção ao verificar PIX de usuário sem organização")
+    void shouldThrowExceptionWhenVerifyingPixForUserWithoutOrganization() {
         // Arrange
-        testUser.setBankDetails(null);
+        testUser.setOrganization(null);
+        when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.of(testUser));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> userService.verifyPixKey(testUser.getUserId(), "proof-url")
+        );
+
+        assertEquals("Usuário não possui organização associada", exception.getMessage());
+        verify(userRepository, never()).saveAndFlush(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao verificar organização sem dados bancários")
+    void shouldThrowExceptionWhenVerifyingOrganizationWithoutBankDetails() {
+        // Arrange
+        testMosque.setBankDetails(null);
         when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.of(testUser));
 
         // Act & Assert
@@ -363,8 +390,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao verificar usuário sem chave PIX cadastrada")
-    void shouldThrowExceptionWhenVerifyingUserWithoutPixKey() {
+    @DisplayName("Deve lançar exceção ao verificar organização sem chave PIX cadastrada")
+    void shouldThrowExceptionWhenVerifyingOrganizationWithoutPixKey() {
         // Arrange
         bankDetails.setPixKey(null);
         when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.of(testUser));
@@ -380,8 +407,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao verificar usuário com chave PIX em branco")
-    void shouldThrowExceptionWhenVerifyingUserWithBlankPixKey() {
+    @DisplayName("Deve lançar exceção ao verificar organização com chave PIX em branco")
+    void shouldThrowExceptionWhenVerifyingOrganizationWithBlankPixKey() {
         // Arrange
         bankDetails.setPixKey("   ");
         when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.of(testUser));
@@ -465,15 +492,22 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve verificar múltiplas chaves PIX para diferentes usuários")
-    void shouldVerifyMultiplePixKeysForDifferentUsers() {
+    @DisplayName("Deve verificar múltiplas chaves PIX para diferentes organizações")
+    void shouldVerifyMultiplePixKeysForDifferentOrganizations() {
         // Arrange
         User user2 = new User();
         user2.setUserId(UUID.randomUUID());
+
+        Mosque mosque2 = new Mosque();
+        mosque2.setOrgName("Mesquita 2");
+        mosque2.setImaName("Ima 2");
+
         BankDetails bankDetails2 = new BankDetails();
         bankDetails2.setPixKey("+5511987654321");
         bankDetails2.setPixKeyType(PixKeyType.PHONE);
-        user2.setBankDetails(bankDetails2);
+        mosque2.setBankDetails(bankDetails2);
+
+        user2.setOrganization(mosque2);
 
         when(userRepository.findById(testUser.getUserId())).thenReturn(Optional.of(testUser));
         when(userRepository.findById(user2.getUserId())).thenReturn(Optional.of(user2));

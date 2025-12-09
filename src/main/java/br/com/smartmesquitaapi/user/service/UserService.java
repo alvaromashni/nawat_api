@@ -44,7 +44,7 @@ public class UserService {
     }
 
     /**
-     * Verifica/aprova a chave PIX de um usuário
+     * Verifica/aprova a chave PIX de uma organização através do usuário
      * @param userId ID do usuário
      * @param proofUrl URL do comprovante de titularidade (opcional)
      */
@@ -53,7 +53,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userId));
 
-        BankDetails bankDetails = user.getBankDetails();
+        if (user.getOrganization() == null) {
+            throw new RuntimeException("Usuário não possui organização associada");
+        }
+
+        BankDetails bankDetails = user.getOrganization().getBankDetails();
         if (bankDetails == null) {
             throw new RuntimeException("Usuário não possui dados bancários cadastrados");
         }

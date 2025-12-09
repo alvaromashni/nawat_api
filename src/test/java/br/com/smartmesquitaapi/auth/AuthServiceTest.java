@@ -3,10 +3,12 @@ package br.com.smartmesquitaapi.auth;
 import br.com.smartmesquitaapi.api.exception.auth.EmailAlreadyExistsException;
 import br.com.smartmesquitaapi.api.exception.auth.InvalidCredentialsException;
 import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
-import br.com.smartmesquitaapi.auth.dto.request.BankDetailsRequest;
 import br.com.smartmesquitaapi.auth.dto.request.LoginRequest;
 import br.com.smartmesquitaapi.auth.dto.request.RegisterUserRequest;
 import br.com.smartmesquitaapi.auth.dto.response.AuthResponse;
+import br.com.smartmesquitaapi.organization.domain.Mosque;
+import br.com.smartmesquitaapi.organization.dto.MosqueDto;
+import br.com.smartmesquitaapi.organization.mapper.OrganizationMapper;
 import br.com.smartmesquitaapi.pix.exception.UserNotFoundException;
 import br.com.smartmesquitaapi.security.TokenConfig;
 import br.com.smartmesquitaapi.user.UserRepository;
@@ -54,16 +56,31 @@ class AuthServiceTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
+    @Mock
+    private OrganizationMapper organizationMapper;
+
     @InjectMocks
     private AuthService authService;
 
     private User testUser;
+    private Mosque testMosque;
     private RegisterUserRequest registerRequest;
     private LoginRequest loginRequest;
     private RefreshToken refreshToken;
 
     @BeforeEach
     void setUp() {
+        // Configurar organização de teste
+        testMosque = new Mosque();
+        testMosque.setOrgName("Mesquita Teste");
+        testMosque.setImaName("Ima Teste");
+
+        BankDetails bankDetails = new BankDetails();
+        bankDetails.setPixKey("joao@example.com");
+        bankDetails.setPixKeyType(PixKeyType.EMAIL);
+        bankDetails.setIsVerified(true);
+        testMosque.setBankDetails(bankDetails);
+
         // Configurar usuário de teste
         testUser = new User();
         testUser.setUserId(UUID.randomUUID());
@@ -72,13 +89,14 @@ class AuthServiceTest {
         testUser.setPassword("encodedPassword123");
         testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
+        testUser.setOrganization(testMosque);
 
         // Configurar request de registro
         registerRequest = new RegisterUserRequest();
         registerRequest.setName("João Silva");
         registerRequest.setEmail("joao@example.com");
         registerRequest.setPassword("senha123");
-        registerRequest.setRole(UserRole.USER);
+        registerRequest.setOrganization(null); // Sem organização por padrão
 
         // Configurar request de login
         loginRequest = new LoginRequest();
@@ -101,6 +119,7 @@ class AuthServiceTest {
         // Arrange
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword123");
+        when(organizationMapper.toEntity(any())).thenReturn(null);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(tokenConfig.generateToken(any(User.class))).thenReturn("jwt.token.here");
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
@@ -126,24 +145,31 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Deve registrar usuário com dados bancários")
-    void shouldRegisterUserWithBankDetails() {
+    @DisplayName("Deve registrar usuário com organização (Mesquita)")
+    void shouldRegisterUserWithOrganization() {
         // Arrange
-        BankDetailsRequest bankDetailsRequest = new BankDetailsRequest();
-        bankDetailsRequest.setPixKey("joao@example.com");
-        bankDetailsRequest.setPixKeyType(PixKeyType.EMAIL);
-        bankDetailsRequest.setBankName("Banco do Brasil");
-        bankDetailsRequest.setAccountHolder("João Silva");
-        bankDetailsRequest.setCnpj("12345678000199");
-        bankDetailsRequest.setAccountNumber("12345-6");
+        MosqueDto mosqueDto = new MosqueDto();
+        mosqueDto.setOrgName("Mesquita Central");
+        mosqueDto.setImaName("Ima João");
 
-        registerRequest.setBankDetails(bankDetailsRequest);
+        BankDetails bankDetails = new BankDetails();
+        bankDetails.setPixKey("joao@example.com");
+        bankDetails.setPixKeyType(PixKeyType.EMAIL);
+        bankDetails.setBankName("Banco do Brasil");
+        bankDetails.setAccountHolder("João Silva");
+        bankDetails.setCnpj("12345678000199");
+        bankDetails.setAccountNumber("12345-6");
+        mosqueDto.setBankDetails(bankDetails);
+
+        registerRequest.setOrganization(mosqueDto);
 
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword123");
+        when(organizationMapper.toEntity(any())).thenReturn(testMosque);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
             savedUser.setUserId(UUID.randomUUID());
+            savedUser.setOrganization(testMosque);
             return savedUser;
         });
         when(tokenConfig.generateToken(any(User.class))).thenReturn("jwt.token.here");
@@ -155,15 +181,13 @@ class AuthServiceTest {
         // Assert
         assertNotNull(response);
         assertTrue(response.getUser().getHasPixKey());
+        assertEquals(UserRole.ORG_OWNER, response.getUser().getRole());
 
-        verify(userRepository).save(argThat(user -> {
-            BankDetails details = user.getBankDetails();
-            return details != null &&
-                   details.getPixKey().equals("joao@example.com") &&
-                   details.getPixKeyType() == PixKeyType.EMAIL &&
-                   details.getBankName().equals("Banco do Brasil") &&
-                   !details.getIsVerified();
-        }));
+        verify(organizationMapper).toEntity(mosqueDto);
+        verify(userRepository).save(argThat(user ->
+            user.getOrganization() != null &&
+            user.getRole() == UserRole.ORG_OWNER
+        ));
     }
 
     @Test
@@ -477,7 +501,9 @@ class AuthServiceTest {
         BankDetails bankDetails = new BankDetails();
         bankDetails.setPixKey("joao@example.com");
         bankDetails.setPixKeyType(PixKeyType.EMAIL);
-        testUser.setBankDetails(bankDetails);
+        bankDetails.setIsVerified(true);
+        testMosque.setBankDetails(bankDetails);
+        testUser.setOrganization(testMosque);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
             .thenReturn(null);
@@ -494,10 +520,10 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Deve indicar ausência de PIX key quando usuário não tem dados bancários")
-    void shouldIndicateNoPixKeyWhenUserHasNoBankDetails() {
+    @DisplayName("Deve indicar ausência de PIX key quando usuário não tem organização")
+    void shouldIndicateNoPixKeyWhenUserHasNoOrganization() {
         // Arrange
-        testUser.setBankDetails(null);
+        testUser.setOrganization(null);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
             .thenReturn(null);

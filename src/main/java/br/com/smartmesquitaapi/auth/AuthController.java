@@ -21,15 +21,18 @@ import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 @Slf4j
 public class AuthController {
 
     private final AuthService authService;
 
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterUserRequest request) {
-        log.info("POST /api/auth/register - Email: {} | Role: {}", request.getEmail(), request.getRole());
+        log.info("POST /api/auth/register - Email: {}", request.getEmail());
 
         AuthResponse response = authService.register(request);
 

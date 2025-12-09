@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.auth.dto.request;
 
+import br.com.smartmesquitaapi.organization.dto.OrganizationDto;
 import br.com.smartmesquitaapi.user.domain.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -28,10 +29,6 @@ public class RegisterUserRequest{
     @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
     private String password;
 
-    @NotNull(message = "Role é obrigatória")
-    private UserRole role;
-
-    // Opcional - apenas para MESQUITA_OWNER
-    private BankDetailsRequest bankDetails;
+    private OrganizationDto organization;
 
 }

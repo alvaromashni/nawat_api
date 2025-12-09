@@ -7,28 +7,41 @@ import br.com.smartmesquitaapi.organization.dto.ChurchDto;
 import br.com.smartmesquitaapi.organization.dto.MosqueDto;
 import br.com.smartmesquitaapi.organization.dto.OrganizationDto;
 import br.com.smartmesquitaapi.user.domain.Address;
-import br.com.smartmesquitaapi.user.domain.MosqueInfo;
+import br.com.smartmesquitaapi.user.domain.Notification;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.dto.AddressDto;
-import br.com.smartmesquitaapi.user.dto.MosqueInfoDto;
-import br.com.smartmesquitaapi.user.dto.MosqueProfileDto;
+import br.com.smartmesquitaapi.user.dto.NotificationsSettingsDto;
+import br.com.smartmesquitaapi.user.dto.OrganizationProfileDto;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OrganizationMapper {
 
-    public OrganizationDto toProfileDto(User user){
+    public OrganizationProfileDto toProfileDto(User user){
 
         Organization org = user.getOrganization();
+        OrganizationProfileDto organizationProfileDto = new OrganizationProfileDto();
+
+        NotificationsSettingsDto notificationDto = new NotificationsSettingsDto();
+
+        if (user.getNotification() != null){
+            Notification notification = user.getNotification();
+            notificationDto.setDailySummary(notification.isDailySummary());
+            notificationDto.setDonationDone(notification.isDonationDone());
+            notificationDto.setTotemMaintenance(notification.isTotemMaintenance());
+        }
 
         if (org instanceof Church) {
-            return mapToChurchDto((Church) org);
+            ChurchDto churchdto =  mapToChurchDto((Church) org);
+            organizationProfileDto.setOrganizationDto(churchdto);
         }
         else if (org instanceof Mosque) {
-            return mapToMosqueDto((Mosque) org);
+            MosqueDto mosqueDto = mapToMosqueDto((Mosque) org);
+            organizationProfileDto.setOrganizationDto(mosqueDto);
         }
-        return null;
+        organizationProfileDto.setNotificationsSettingsDto(notificationDto);
 
+        return organizationProfileDto;
     }
 
     private AddressDto toAddressDto(Address address) {
@@ -65,6 +78,9 @@ public class OrganizationMapper {
         }
     }
 
+    /**
+     * Converte um OrganizationDTO em uma Organization Entity
+     */
     public Organization toEntity(OrganizationDto dto){
 
         Address address = mapToAddress(dto.getAddressDto());
