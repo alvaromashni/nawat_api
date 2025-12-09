@@ -59,7 +59,7 @@ public class OrganizationMapper {
         return dto;
     }
 
-    public void updateUserFromDto(OrganizationDto dto, Organization org){
+    public void updateOrganizationFromDto(OrganizationDto dto, Organization org){
         if (dto != null) {
             org.setAddress(mapToAddress(dto.getAddressDto()));
             org.setBankDetails(dto.getBankDetails());

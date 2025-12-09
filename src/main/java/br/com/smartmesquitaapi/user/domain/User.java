@@ -56,9 +56,20 @@ public class User implements UserDetails {
         return isEnabled;
     }
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "organization_id")
     private Organization organization;
+
+    // Helper method para manter consistência bidirecional
+    public void setOrganization(Organization organization) {
+        if (this.organization != null) {
+            this.organization.setUser(null);
+        }
+        this.organization = organization;
+        if (organization != null) {
+            organization.setUser(this);
+        }
+    }
 
 
 // ============= USERDETAILS OVERRIDES =============
@@ -103,6 +114,28 @@ public class User implements UserDetails {
     public boolean canReceivePayments() {
         if (organization != null) {
             return organization.canReceivePayments();
+        }
+        return false;
+    }
+
+    /**
+     * Retorna os dados bancários da organização associada ao usuário
+     * @return BankDetails ou null se não houver organização
+     */
+    public BankDetails getBankDetails() {
+        if (organization != null) {
+            return organization.getBankDetails();
+        }
+        return null;
+    }
+
+    /**
+     * Verifica se o usuário possui chave PIX válida através da organização
+     * @return true se possui chave PIX válida
+     */
+    public boolean hasValidPixKey() {
+        if (organization != null) {
+            return organization.hasValidPixKey();
         }
         return false;
     }

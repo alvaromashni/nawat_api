@@ -1,993 +1,546 @@
-# Smart Mesquita API - Documentação dos Endpoints
+# 🕌 Smart Mesquita API
 
-## Índice
+<div align="center">
 
-1. [Visão Geral](#visão-geral)
-2. [Autenticação](#autenticação)
-3. [Endpoints de Autenticação](#endpoints-de-autenticação)
-4. [Endpoints de Doações PIX](#endpoints-de-doações-pix)
-5. [Endpoints Administrativos - PIX](#endpoints-administrativos---pix)
-6. [Endpoints Administrativos - Usuários](#endpoints-administrativos---usuários)
-7. [Endpoints de Debug](#endpoints-de-debug)
-8. [Modelos de Dados](#modelos-de-dados)
-9. [Códigos de Status HTTP](#códigos-de-status-http)
-10. [Rate Limiting](#rate-limiting)
+![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-green?style=for-the-badge&logo=spring)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue?style=for-the-badge&logo=postgresql)
+![Redis](https://img.shields.io/badge/Redis-7-red?style=for-the-badge&logo=redis)
+![Maven](https://img.shields.io/badge/Maven-3.9+-purple?style=for-the-badge&logo=apache-maven)
 
----
+**API REST para gerenciamento de doações PIX em organizações religiosas**
 
-## Visão Geral
+[📖 Documentação da API](./API_DOCUMENTATION.md) • [🧪 Guia de Testes](./TESTES.md) • [🐛 Reportar Bug](https://github.com/seu-usuario/smartMesquitaApi/issues)
 
-**Base URL:** `http://localhost:8080` (desenvolvimento)
-
-**Content-Type:** `application/json`
-
-**Autenticação:** Bearer Token (JWT)
-
-### Headers Padrão
-
-```http
-Content-Type: application/json
-Authorization: Bearer {token}
-```
+</div>
 
 ---
 
-## Autenticação
+## 📋 Índice
 
-A API utiliza JWT (JSON Web Tokens) para autenticação. Após fazer login ou registro, você receberá:
-
-- `token`: Token de acesso (válido por tempo limitado)
-- `refreshToken`: Token para renovar o acesso
-- `type`: Tipo do token (sempre "Bearer")
-
-### Como usar o token
-
-Inclua o token no header `Authorization` de todas as requisições protegidas:
-
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
----
-
-## Endpoints de Autenticação
-
-### 1. Registrar Novo Usuário
-
-Cria uma nova conta de usuário.
-
-**Endpoint:** `POST /api/v1/auth/register`
-
-**Autenticação:** Não requerida
-
-**Request Body:**
-
-```json
-{
-  "name": "João Silva",
-  "email": "joao@example.com",
-  "password": "senha123",
-  "role": "USER",
-  "bankDetails": {
-    "pixKey": "joao@example.com",
-    "pixKeyType": "EMAIL",
-    "bankName": "Banco do Brasil",
-    "accountHolder": "João Silva",
-    "cnpj": "12345678000199",
-    "bankBranch": "0001",
-    "accountNumber": "12345-6"
-  }
-}
-```
-
-**Campos Obrigatórios:**
-
-- `name` (string, 3-100 caracteres): Nome completo
-- `email` (string, formato email): Email válido
-- `password` (string, mínimo 6 caracteres): Senha
-- `role` (enum): `ADMIN`, `STAFF`, `MESQUITA_OWNER`, ou `USER`
-
-**Campos Opcionais:**
-
-- `bankDetails` (object): Dados bancários (obrigatório apenas para `MESQUITA_OWNER`)
-  - `pixKey` (string): Chave PIX
-  - `pixKeyType` (enum): `EMAIL`, `PHONE`, `CPF`, `CNPJ`, `EVP`
-  - `bankName` (string): Nome do banco
-  - `accountHolder` (string): Titular da conta
-  - `cnpj` (string): CNPJ da mesquita
-  - `bankBranch` (string): Agência
-  - `accountNumber` (string): Número da conta
-
-**Response (201 Created):**
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "550e8400-e29b-41d4-a716-446655440000",
-  "type": "Bearer",
-  "user": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "role": "USER",
-    "isActive": true,
-    "hasPixKey": true
-  }
-}
-```
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [Funcionalidades](#-funcionalidades)
+- [Arquitetura](#-arquitetura)
+- [Tecnologias](#-tecnologias)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Configuração](#-configuração)
+- [Executando o Projeto](#-executando-o-projeto)
+- [Testes](#-testes)
+- [Documentação da API](#-documentação-da-api)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
 
 ---
 
-### 2. Login
+## 🎯 Sobre o Projeto
 
-Autentica um usuário existente.
+**Smart Mesquita API** é uma solução completa para gestão de doações via PIX para organizações religiosas (mesquitas e igrejas). O sistema permite o gerenciamento de organizações, autenticação segura, geração de QR Codes PIX e controle completo de doações.
 
-**Endpoint:** `POST /api/v1/auth/login`
+### 🌟 Principais Características
 
-**Autenticação:** Não requerida
+- 🔐 **Autenticação JWT** com refresh tokens
+- 🏢 **Multi-organização** (suporte a Mesquitas e Igrejas)
+- 💰 **Doações PIX** com geração dinâmica de QR Codes
+- ✅ **Validação de CNPJ** com algoritmo de dígitos verificadores
+- 🔒 **Criptografia** de dados sensíveis (chaves PIX, dados bancários)
+- 🚦 **Rate Limiting** por IP e usuário via AOP
+- 📊 **Auditoria** de transações e alterações
+- 🎨 **Herança Polimórfica** para diferentes tipos de organizações
+- ⚡ **Cache Redis** para performance
+- 🛡️ **Validações** completas com Bean Validation
 
-**Rate Limit:** 5 requisições por 60 segundos (por IP)
+---
 
-**Request Body:**
+## ✨ Funcionalidades
 
-```json
-{
-  "email": "joao@example.com",
-  "password": "senha123"
-}
+### Autenticação e Usuários
+- ✅ Registro de usuários com diferentes roles (ADMIN, STAFF, ORG_OWNER, USER)
+- ✅ Login com JWT (validade: 24h)
+- ✅ Refresh tokens (validade: 30 dias)
+- ✅ Verificação de tokens
+- ✅ Gerenciamento de perfil de organização
+
+### Organizações
+- ✅ Cadastro de Mesquitas e Igrejas
+- ✅ Validação de CNPJ com dígitos verificadores
+- ✅ Gerenciamento de dados bancários
+- ✅ Validação de chaves PIX
+- ✅ Busca por cidade, estado, nome
+
+### Doações PIX
+- ✅ Criação de cobranças com QR Code
+- ✅ Geração de EMV/Brcode (Pix Copia e Cola)
+- ✅ Imagens de QR Code em Base64
+- ✅ Expiração automática de cobranças
+- ✅ Confirmação manual por staff
+- ✅ Consulta por ID local ou TXID
+- ✅ Idempotência para prevenir duplicatas
+
+### Segurança
+- ✅ Rate limiting (login: 5/min, doações: 1/10s)
+- ✅ Criptografia AES para dados sensíveis
+- ✅ CORS configurável
+- ✅ Validação de roles e permissões
+- ✅ Spring Security integrado
+
+---
+
+## 🏗️ Arquitetura
+
+### Padrões Utilizados
+
+- **Layered Architecture** - Separação em camadas (Controller, Service, Repository, Domain)
+- **DTO Pattern** - Isolamento de modelos de domínio e transferência
+- **Repository Pattern** - Abstração de acesso a dados com Spring Data JPA
+- **AOP (Aspect-Oriented Programming)** - Rate limiting via aspectos
+- **Herança Polimórfica** - `InheritanceType.JOINED` para Organization (Church/Mosque)
+- **Builder Pattern** - Construção fluente de objetos
+- **Mapper Pattern** - Conversão entre DTOs e Entities
+
+### Camadas do Sistema
+
 ```
-
-**Campos Obrigatórios:**
-
-- `email` (string, formato email): Email do usuário
-- `password` (string): Senha
-
-**Response (200 OK):**
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "550e8400-e29b-41d4-a716-446655440000",
-  "type": "Bearer",
-  "user": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "role": "USER",
-    "isActive": true,
-    "hasPixKey": true
-  }
-}
-```
-
-**Response (401 Unauthorized):**
-
-```json
-{
-  "timestamp": "2025-11-26T14:30:00",
-  "status": 401,
-  "error": "Unauthorized",
-  "message": "Credenciais inválidas",
-  "path": "/api/v1/auth/login"
-}
+┌─────────────────────────────────────┐
+│     Controllers (REST API)          │ ← Endpoints REST
+├─────────────────────────────────────┤
+│     Services (Business Logic)       │ ← Lógica de negócio
+├─────────────────────────────────────┤
+│     Repositories (Data Access)      │ ← Spring Data JPA
+├─────────────────────────────────────┤
+│     Entities (Domain Models)        │ ← Models JPA
+├─────────────────────────────────────┤
+│     Infrastructure                  │ ← Utils, Config, Security
+└─────────────────────────────────────┘
 ```
 
 ---
 
-### 3. Verificar Token
+## 🛠️ Tecnologias
 
-Valida se o token JWT é válido.
+### Core
+- **Java 21** - Linguagem de programação
+- **Spring Boot 3.5.6** - Framework principal
+- **Maven** - Gerenciamento de dependências
 
-**Endpoint:** `GET /api/v1/auth/verify`
+### Persistência
+- **PostgreSQL 13+** - Banco de dados relacional
+- **Spring Data JPA** - ORM (Hibernate)
+- **Flyway** - Migrations de banco de dados
 
-**Autenticação:** Requerida (Bearer Token)
+### Cache e Performance
+- **Redis 7** - Cache em memória
+- **Spring Session Data Redis** - Gerenciamento de sessões
 
-**Response (200 OK):**
+### Segurança
+- **Spring Security** - Framework de segurança
+- **JWT (java-jwt)** - Tokens de autenticação
+- **BCrypt** - Hash de senhas
+- **AES** - Criptografia de dados sensíveis
 
-```
-(Sem conteúdo - apenas status 200)
-```
+### QR Code e PIX
+- **ZXing (3.5.3)** - Geração de QR Codes
+- **EMV Generator** - Payloads PIX/Brcode
 
-**Response (401 Unauthorized):**
+### Utilitários
+- **Lombok** - Redução de boilerplate
+- **Bean Validation** - Validações
 
-```json
-{
-  "timestamp": "2025-11-26T14:30:00",
-  "status": 401,
-  "error": "Unauthorized",
-  "message": "Token inválido ou expirado"
-}
-```
-
----
-
-### 4. Renovar Token (Refresh)
-
-Gera um novo par de tokens usando o refresh token.
-
-**Endpoint:** `POST /api/v1/auth/refresh`
-
-**Autenticação:** Não requerida (usa refreshToken no body)
-
-**Request Body:**
-
-```json
-{
-  "token": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-**Campos Obrigatórios:**
-
-- `token` (string): Refresh token recebido no login/registro
-
-**Response (200 OK):**
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "660e8400-e29b-41d4-a716-446655440001",
-  "type": "Bearer",
-  "user": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "role": "USER",
-    "isActive": true,
-    "hasPixKey": true
-  }
-}
-```
+### Testes
+- **JUnit 5** - Framework de testes
+- **Spring Boot Test** - Testes de integração
+- **Mockito** - Mocks
 
 ---
 
-## Endpoints de Doações PIX
+## 📦 Pré-requisitos
 
-### 5. Criar Cobrança PIX
+Antes de começar, certifique-se de ter instalado:
 
-Cria uma nova cobrança PIX com QR Code.
+- **Java 21** ou superior ([Download](https://adoptium.net/))
+- **Maven 3.9+** (ou use o `./mvnw` incluído)
+- **PostgreSQL 13+** ([Download](https://www.postgresql.org/download/))
+- **Redis 7+** ([Download](https://redis.io/download/) ou via Docker)
+- **Git** ([Download](https://git-scm.com/))
 
-**Endpoint:** `POST /api/v1/donations/{localId}/pix`
-
-**Autenticação:** Requerida (Bearer Token)
-
-**Rate Limit:** 1 requisição por 10 segundos (por usuário)
-
-**Path Parameters:**
-
-- `localId` (string): ID local da doação (gerado pelo totem/cliente)
-
-**Request Body:**
-
-```json
-{
-  "amountCents": 5000,
-  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
-  "expiresMinutes": 30
-}
-```
-
-**Campos Obrigatórios:**
-
-- `amountCents` (integer, 100-1000000): Valor em centavos (ex: 5000 = R$50,00)
-- `idempotencyKey` (string, max 100): UUID único para prevenir duplicatas
-
-**Campos Opcionais:**
-
-- `expiresMinutes` (integer, 1-60): Tempo de expiração em minutos (padrão: 10)
-
-**Response (201 Created):**
-
-```json
-{
-  "txid": "TX123456789ABCDEF",
-  "qrPayload": "00020126580014br.gov.bcb.pix...",
-  "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "expiresAt": 1732642800000,
-  "amountCents": 5000
-}
-```
-
-**Descrição dos campos:**
-
-- `txid` (string): ID da transação PIX
-- `qrPayload` (string): String Pix Copia e Cola (Brcode)
-- `qrImageBase64` (string): Imagem do QR Code em Base64
-- `expiresAt` (long): Timestamp de expiração (milissegundos desde epoch)
-- `amountCents` (integer): Valor em centavos
-
-**Response (400 Bad Request):**
-
-```json
-{
-  "timestamp": "2025-11-26T14:30:00",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Usuário não possui chave PIX verificada",
-  "path": "/api/v1/donations/LOCAL-123/pix"
-}
-```
-
----
-
-### 6. Consultar Cobrança por Local ID
-
-Busca uma cobrança pelo ID local.
-
-**Endpoint:** `GET /api/v1/donations/{localId}`
-
-**Autenticação:** Requerida (Bearer Token)
-
-**Path Parameters:**
-
-- `localId` (string): ID local da doação
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "localDonationId": "LOCAL-123",
-  "txid": "TX123456789ABCDEF",
-  "amountCents": 5000,
-  "status": "PENDING",
-  "qrPayload": "00020126580014br.gov.bcb.pix...",
-  "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "expiresAt": "2025-11-26T15:00:00",
-  "createdAt": "2025-11-26T14:30:00",
-  "userName": "João Silva",
-  "receiptImageUrl": null
-}
-```
-
-**Response (404 Not Found):**
-
-```json
-{
-  "timestamp": "2025-11-26T14:30:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Cobrança não encontrada",
-  "path": "/api/v1/donations/LOCAL-999"
-}
-```
-
----
-
-### 7. Consultar Cobrança por TXID
-
-Busca uma cobrança pelo Transaction ID do PIX.
-
-**Endpoint:** `GET /api/v1/donations/txid/{txid}`
-
-**Autenticação:** Requerida (Bearer Token)
-
-**Path Parameters:**
-
-- `txid` (string): Transaction ID da cobrança PIX
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "localDonationId": "LOCAL-123",
-  "txid": "TX123456789ABCDEF",
-  "amountCents": 5000,
-  "status": "PAID",
-  "qrPayload": "00020126580014br.gov.bcb.pix...",
-  "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "expiresAt": "2025-11-26T15:00:00",
-  "createdAt": "2025-11-26T14:30:00",
-  "userName": "João Silva",
-  "receiptImageUrl": "https://example.com/receipt.jpg"
-}
-```
-
----
-
-### 8. Confirmar Cobrança Manualmente
-
-Confirma manualmente uma cobrança (apenas STAFF/ADMIN).
-
-**Endpoint:** `POST /api/v1/donations/{localId}/confirm-manual`
-
-**Autenticação:** Requerida (Bearer Token - STAFF ou ADMIN)
-
-**Path Parameters:**
-
-- `localId` (string): ID local da doação
-
-**Request Body:**
-
-```json
-{
-  "receiptUrl": "https://example.com/receipt.jpg",
-  "notes": "Pagamento confirmado via extrato bancário"
-}
-```
-
-**Campos Obrigatórios:**
-
-- `receiptUrl` (string): URL do comprovante
-
-**Campos Opcionais:**
-
-- `notes` (string): Observações sobre a confirmação
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "localDonationId": "LOCAL-123",
-  "txid": "TX123456789ABCDEF",
-  "amountCents": 5000,
-  "status": "CONFIRMED_MANUALLY",
-  "qrPayload": "00020126580014br.gov.bcb.pix...",
-  "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "expiresAt": "2025-11-26T15:00:00",
-  "createdAt": "2025-11-26T14:30:00",
-  "userName": "João Silva",
-  "receiptImageUrl": "https://example.com/receipt.jpg"
-}
-```
-
----
-
-## Endpoints Administrativos - PIX
-
-**Autenticação:** Todos os endpoints requerem role `ADMIN` ou `STAFF`
-
-### 9. Expirar Cobranças Antigas
-
-Força a expiração de cobranças pendentes antigas.
-
-**Endpoint:** `POST /api/admin/pix/expire-old-charges`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Response (200 OK):**
-
-```json
-{
-  "message": "Cobranças expiradas com sucesso",
-  "expiredCount": 15
-}
-```
-
----
-
-### 10. Buscar Cobrança por ID (Admin)
-
-Busca uma cobrança específica por ID interno.
-
-**Endpoint:** `GET /api/admin/pix/charges/{chargeId}`
-
-**Autenticação:** Requerida (Bearer Token - ADMIN ou STAFF)
-
-**Path Parameters:**
-
-- `chargeId` (UUID): ID interno da cobrança
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "localDonationId": "LOCAL-123",
-  "txid": "TX123456789ABCDEF",
-  "amountCents": 5000,
-  "status": "PENDING",
-  "qrPayload": "00020126580014br.gov.bcb.pix...",
-  "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "expiresAt": "2025-11-26T15:00:00",
-  "createdAt": "2025-11-26T14:30:00",
-  "userName": "João Silva",
-  "receiptImageUrl": null
-}
-```
-
-**Status:** ⚠️ Endpoint em desenvolvimento (retorna 200 vazio)
-
----
-
-### 11. Atualizar Status de Cobrança
-
-Altera manualmente o status de uma cobrança (use com cautela).
-
-**Endpoint:** `PATCH /api/admin/pix/charges/{chargeId}/status`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Path Parameters:**
-
-- `chargeId` (UUID): ID interno da cobrança
-
-**Request Body:**
-
-```json
-{
-  "status": "PAID",
-  "reason": "Pagamento confirmado via extrato bancário"
-}
-```
-
-**Response (200 OK):**
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "localDonationId": "LOCAL-123",
-  "txid": "TX123456789ABCDEF",
-  "amountCents": 5000,
-  "status": "PAID",
-  "qrPayload": "00020126580014br.gov.bcb.pix...",
-  "qrImageBase64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "expiresAt": "2025-11-26T15:00:00",
-  "createdAt": "2025-11-26T14:30:00",
-  "userName": "João Silva",
-  "receiptImageUrl": null
-}
-```
-
-**Status:** ⚠️ Endpoint em desenvolvimento (retorna 200 vazio)
-
----
-
-### 12. Importar Extrato Bancário
-
-Importa um extrato bancário para reconciliação (futuro).
-
-**Endpoint:** `POST /api/admin/pix/import-extract`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Response (200 OK):**
-
-```json
-{
-  "message": "Funcionalidade em desenvolvimento"
-}
-```
-
-**Status:** ⚠️ Endpoint em desenvolvimento
-
----
-
-## Endpoints Administrativos - Usuários
-
-**Autenticação:** Todos os endpoints requerem role `ADMIN`
-
-### 13. Criar Usuário
-
-Cria um novo usuário (admin).
-
-**Endpoint:** `POST /api/v1/users/post/user`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Request Body:**
-
-```json
-{
-  "name": "Maria Santos",
-  "email": "maria@example.com",
-  "password": "senha123",
-  "role": "STAFF",
-  "enabled": true,
-  "bankDetails": {
-    "pixKey": "maria@example.com",
-    "pixKeyType": "EMAIL"
-  }
-}
-```
-
-**Response (200 OK):**
-
-```
-(Sem conteúdo - apenas status 200)
-```
-
----
-
-### 14. Buscar Usuário por Email
-
-Busca um usuário pelo email.
-
-**Endpoint:** `GET /api/v1/users/get/user?email={email}`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Query Parameters:**
-
-- `email` (string): Email do usuário
-
-**Response (200 OK):**
-
-```
-(Sem conteúdo - apenas status 200)
-```
-
-**Nota:** Endpoint retorna 200 vazio (implementação pode precisar ajuste)
-
----
-
-### 15. Deletar Usuário por Email
-
-Remove um usuário do sistema.
-
-**Endpoint:** `DELETE /api/v1/users/delete/user?email={email}`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Query Parameters:**
-
-- `email` (string): Email do usuário a ser deletado
-
-**Response (200 OK):**
-
-```
-(Sem conteúdo - apenas status 200)
-```
-
----
-
-### 16. Atualizar Usuário
-
-Atualiza dados de um usuário existente.
-
-**Endpoint:** `PUT /api/v1/users/put/user?email={email}`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Query Parameters:**
-
-- `email` (string): Email do usuário a ser atualizado
-
-**Request Body:**
-
-```json
-{
-  "name": "Maria Santos Silva",
-  "email": "maria.silva@example.com"
-}
-```
-
-**Response (200 OK):**
-
-```
-(Sem conteúdo - apenas status 200)
-```
-
----
-
-### 17. Verificar Chave PIX de Usuário
-
-Aprova/verifica a chave PIX de um usuário.
-
-**Endpoint:** `POST /api/v1/users/{userId}/verify-pix?proofUrl={url}`
-
-**Autenticação:** Requerida (Bearer Token - apenas ADMIN)
-
-**Path Parameters:**
-
-- `userId` (UUID): ID do usuário
-
-**Query Parameters:**
-
-- `proofUrl` (string, opcional): URL do comprovante de titularidade
-
-**Response (200 OK):**
-
-```json
-"Chave PIX verificada com sucesso para o usuário 123e4567-e89b-12d3-a456-426614174000"
-```
-
----
-
-## Endpoints de Debug
-
-**Autenticação:** Requerida (qualquer usuário autenticado)
-
-### 18. Verificar Dados do Usuário Atual
-
-Retorna informações completas do usuário autenticado.
-
-**Endpoint:** `GET /api/debug/me`
-
-**Autenticação:** Requerida (Bearer Token)
-
-**Response (200 OK):**
-
-```json
-{
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "name": "João Silva",
-  "email": "joao@example.com",
-  "role": "MESQUITA_OWNER",
-  "isActive": true,
-  "bankDetails": {
-    "pixKey": "joao@example.com",
-    "pixKeyType": "EMAIL",
-    "bankName": "Banco do Brasil",
-    "accountHolder": "João Silva",
-    "isVerified": true,
-    "verifiedAt": "2025-11-26T10:00:00"
-  },
-  "hasPixKey": true,
-  "hasValidPixKey": true,
-  "canReceivePayments": true
-}
-```
-
----
-
-### 19. Verificar Chave PIX
-
-Verifica o status da chave PIX do usuário autenticado.
-
-**Endpoint:** `GET /api/debug/pix-key`
-
-**Autenticação:** Requerida (Bearer Token)
-
-**Response (200 OK) - Chave Verificada:**
-
-```json
-{
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "email": "joao@example.com",
-  "pixKey": "joao@example.com",
-  "pixKeyType": "EMAIL",
-  "isVerified": true,
-  "status": "VERIFIED",
-  "message": "Chave PIX válida e verificada",
-  "hasPixKey": true,
-  "canCreateCharges": true,
-  "success": "Você pode criar cobranças PIX!"
-}
-```
-
-**Response (200 OK) - Chave Não Verificada:**
-
-```json
-{
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "email": "joao@example.com",
-  "pixKey": "joao@example.com",
-  "pixKeyType": "EMAIL",
-  "isVerified": false,
-  "status": "NOT_VERIFIED",
-  "message": "Chave PIX cadastrada mas não verificada",
-  "hasPixKey": true,
-  "canCreateCharges": false,
-  "warning": "Você precisa verificar a chave PIX antes de receber pagamentos"
-}
-```
-
-**Response (200 OK) - Sem Chave PIX:**
-
-```json
-{
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "email": "joao@example.com",
-  "status": "NO_PIX_KEY",
-  "message": "Chave PIX não cadastrada",
-  "hasPixKey": false,
-  "canCreateCharges": false
-}
-```
-
----
-
-### 20. Verificar Chave PIX (Simulação)
-
-Simula a verificação de uma chave PIX para testes.
-
-**Endpoint:** `POST /api/debug/verify-pix`
-
-**Autenticação:** Requerida (Bearer Token)
-
-**Response (200 OK):**
-
-```json
-{
-  "message": "Chave PIX verificada com sucesso (simulação)",
-  "pixKey": "joao@example.com",
-  "isVerified": true,
-  "warning": "ATENÇÃO: Esta é uma verificação simulada para testes!"
-}
-```
-
-**Response (400 Bad Request):**
-
-```json
-{
-  "error": "Usuário não tem chave PIX cadastrada"
-}
-```
-
----
-
-## Modelos de Dados
-
-### UserRole (Enum)
-
-```
-ADMIN          - Administrador do sistema (acesso total)
-STAFF          - Staff/funcionário (pode validar comprovantes)
-MESQUITA_OWNER - Dono de mesquita (recebe doações)
-USER           - Usuário comum
-```
-
-### PixKeyType (Enum)
-
-```
-EMAIL  - E-mail
-PHONE  - Telefone celular (+55DDNNNNNNNNN)
-CPF    - CPF (11 dígitos)
-CNPJ   - CNPJ (14 dígitos)
-EVP    - Chave aleatória (UUID)
-```
-
-### PixChargeStatus (Enum)
-
-```
-PENDING            - Cobrança criada, aguardando pagamento
-PAID               - Pagamento detectado automaticamente
-CONFIRMED_MANUALLY - Pagamento confirmado manualmente por staff
-EXPIRED            - Cobrança expirou sem pagamento
-CANCELLED          - Cobrança cancelada
-```
-
----
-
-## Códigos de Status HTTP
-
-### Sucesso
-
-- `200 OK` - Requisição bem-sucedida
-- `201 Created` - Recurso criado com sucesso
-
-### Erro do Cliente
-
-- `400 Bad Request` - Dados inválidos ou requisição malformada
-- `401 Unauthorized` - Não autenticado ou token inválido
-- `403 Forbidden` - Sem permissão para acessar o recurso
-- `404 Not Found` - Recurso não encontrado
-- `429 Too Many Requests` - Rate limit excedido
-
-### Erro do Servidor
-
-- `500 Internal Server Error` - Erro interno do servidor
-
----
-
-## Rate Limiting
-
-Alguns endpoints possuem limitação de taxa para prevenir abuso:
-
-### Endpoint de Login
-
-- **Limite:** 5 requisições por 60 segundos
-- **Tipo:** Por IP
-- **Header de Resposta:**
-  ```
-  X-RateLimit-Limit: 5
-  X-RateLimit-Remaining: 4
-  X-RateLimit-Reset: 1732642800
-  ```
-
-### Endpoint de Criação de Cobrança PIX
-
-- **Limite:** 1 requisição por 10 segundos
-- **Tipo:** Por usuário autenticado
-- **Header de Resposta:**
-  ```
-  X-RateLimit-Limit: 1
-  X-RateLimit-Remaining: 0
-  X-RateLimit-Reset: 1732642810
-  ```
-
-### Response quando o limite é excedido (429)
-
-```json
-{
-  "timestamp": "2025-11-26T14:30:00",
-  "status": 429,
-  "error": "Too Many Requests",
-  "message": "Rate limit excedido. Tente novamente em 10 segundos.",
-  "path": "/api/v1/donations/LOCAL-123/pix"
-}
-```
-
----
-
-## Exemplo de Fluxo Completo
-
-### 1. Registrar Usuário Dono de Mesquita
+### Verificando as versões
 
 ```bash
-POST /api/v1/auth/register
-{
-  "name": "Mesquita Central",
-  "email": "contato@mesquitacentral.com",
-  "password": "senhaSegura123",
-  "role": "MESQUITA_OWNER",
-  "bankDetails": {
-    "pixKey": "12345678000199",
-    "pixKeyType": "CNPJ",
-    "bankName": "Banco do Brasil",
-    "accountHolder": "Mesquita Central",
-    "cnpj": "12345678000199",
-    "accountNumber": "12345-6"
-  }
-}
-```
-
-### 2. Verificar Chave PIX (por um Admin)
-
-```bash
-POST /api/v1/users/123e4567-e89b-12d3-a456-426614174000/verify-pix?proofUrl=https://example.com/proof.pdf
-Authorization: Bearer {admin_token}
-```
-
-### 3. Login do Usuário
-
-```bash
-POST /api/v1/auth/login
-{
-  "email": "contato@mesquitacentral.com",
-  "password": "senhaSegura123"
-}
-```
-
-### 4. Criar Cobrança PIX
-
-```bash
-POST /api/v1/donations/DOA-001/pix
-Authorization: Bearer {token}
-{
-  "amountCents": 10000,
-  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
-  "expiresMinutes": 30
-}
-```
-
-### 5. Consultar Status da Cobrança
-
-```bash
-GET /api/v1/donations/DOA-001
-Authorization: Bearer {token}
-```
-
-### 6. Confirmar Manualmente (se necessário)
-
-```bash
-POST /api/v1/donations/DOA-001/confirm-manual
-Authorization: Bearer {staff_token}
-{
-  "receiptUrl": "https://example.com/receipt.jpg",
-  "notes": "Confirmado via extrato bancário"
-}
+java -version       # Java 21.x.x
+mvn -version        # Maven 3.9.x
+psql --version      # PostgreSQL 13.x
+redis-server --version  # Redis 7.x
 ```
 
 ---
 
-## Notas Importantes
+## 🚀 Instalação
 
-1. **Idempotência:** Sempre use uma `idempotencyKey` única ao criar cobranças PIX para evitar duplicatas
-2. **Expiração:** Cobranças PIX expiram automaticamente após o tempo configurado
-3. **Verificação:** Usuários devem ter a chave PIX verificada antes de criar cobranças
-4. **Rate Limiting:** Respeite os limites de taxa para evitar bloqueios temporários
-5. **Segurança:** Nunca exponha tokens em logs ou URLs. Use HTTPS em produção
-6. **Timestamps:** Todos os timestamps são em UTC. Converta para timezone local no frontend
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/seu-usuario/smartMesquitaApi.git
+cd smartMesquitaApi
+```
+
+### 2. Configure o PostgreSQL
+
+Crie o banco de dados:
+
+```sql
+CREATE DATABASE smartMesquita;
+CREATE USER smartuser WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE smartMesquita TO smartuser;
+```
+
+### 3. Inicie o Redis
+
+**Opção 1 - Docker (Recomendado):**
+
+```bash
+docker-compose up -d
+```
+
+**Opção 2 - Local:**
+
+```bash
+redis-server
+```
+
+### 4. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto (ou configure em `application.properties`):
+
+```env
+# Database
+DATABASE_URL=jdbc:postgresql://localhost:5432/smartMesquita
+DATABASE_USERNAME=smartuser
+DATABASE_PASSWORD=your_password
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-minimum-256-bits-change-in-production
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://app.smartmesquita.com
+
+# Redis (se não estiver no padrão)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+### 5. Compile o projeto
+
+```bash
+./mvnw clean install
+```
+
+ou
+
+```bash
+mvn clean install
+```
 
 ---
 
-## Suporte
+## ⚙️ Configuração
 
-Para dúvidas ou problemas com a API, entre em contato com a equipe de desenvolvimento.
+### application.properties
 
-**Versão da API:** v1
-**Última Atualização:** 26/11/2025
+O arquivo `src/main/resources/application.properties` contém as configurações principais:
+
+```properties
+# Application
+spring.application.name=smartMesquitaApi
+
+# Database
+spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5433/smartMesquita}
+spring.datasource.username=${DATABASE_USERNAME:postgres}
+spring.datasource.password=${DATABASE_PASSWORD:Alvinho@25}
+spring.jpa.hibernate.ddl-auto=create
+
+# JWT
+jwt.secret=${JWT_SECRET:dev-secret-key-change-in-production-minimum-256-bits-required}
+
+# CORS
+cors.allowed-origins=${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+
+# Redis
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+
+# Flyway
+spring.flyway.enabled=true
+spring.flyway.baseline-on-migrate=true
+
+# Rate Limit
+ratelimit.default.limit=10
+ratelimit.default.duration=1
+ratelimit.default.unit=MINUTES
+```
+
+### Profiles
+
+- **dev** - Desenvolvimento (padrão)
+- **prod** - Produção (configure variáveis de ambiente)
+
+---
+
+## ▶️ Executando o Projeto
+
+### Modo Desenvolvimento
+
+```bash
+./mvnw spring-boot:run
+```
+
+ou
+
+```bash
+mvn spring-boot:run
+```
+
+### Modo Produção
+
+```bash
+./mvnw clean package
+java -jar target/smartMesquitaApi-0.0.1-SNAPSHOT.jar
+```
+
+### Docker (Futuro)
+
+```bash
+docker build -t smartmesquita-api .
+docker run -p 8080:8080 smartmesquita-api
+```
+
+### Verificando se está rodando
+
+Acesse: http://localhost:8080/swagger-ui.html
+
+Ou teste o endpoint de health:
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+---
+
+## 🧪 Testes
+
+### Executar todos os testes
+
+```bash
+./mvnw test
+```
+
+### Executar testes específicos
+
+```bash
+./mvnw test -Dtest=PixChargeServiceTest
+```
+
+### Cobertura de testes
+
+```bash
+./mvnw clean verify
+```
+
+### Testes Disponíveis
+
+- ✅ `PixChargeServiceTest` - Testes de serviço PIX
+- ✅ `PixChargeRepositoryTest` - Testes de repository
+- ✅ `EmvPayloadGeneratorTest` - Testes de geração EMV
+- ✅ `QrcodeImageGeneratorTest` - Testes de QR Code
+- ✅ `PixKeyValidatorTest` - Testes de validação PIX
+- ✅ `RateLimitAspectTest` - Testes de rate limiting
+- ✅ `TokenConfigTest` - Testes de JWT
+
+---
+
+## 📖 Documentação da API
+
+A documentação completa dos endpoints está disponível em:
+
+- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - Documentação detalhada de todos os endpoints
+- **Swagger UI** - http://localhost:8080/swagger-ui.html (quando o servidor estiver rodando)
+- **OpenAPI JSON** - http://localhost:8080/v3/api-docs
+
+### Endpoints Principais
+
+| Grupo | Endpoints | Descrição |
+|-------|-----------|-----------|
+| **Auth** | `/api/v1/auth/*` | Autenticação (login, register, refresh) |
+| **Organizations** | `/api/v1/users/me/organization-profile` | Perfil de organização |
+| **Donations** | `/api/v1/donations/*` | Criação e consulta de doações PIX |
+| **Admin** | `/api/admin/*` | Endpoints administrativos |
+| **Debug** | `/api/debug/*` | Endpoints de debug |
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+smartMesquitaApi/
+├── src/
+│   ├── main/
+│   │   ├── java/br/com/smartmesquitaapi/
+│   │   │   ├── api/                     # Exceções e DTOs globais
+│   │   │   │   ├── exception/
+│   │   │   │   └── dto/
+│   │   │   ├── auth/                    # Autenticação JWT
+│   │   │   │   ├── dto/
+│   │   │   │   ├── AuthController.java
+│   │   │   │   ├── AuthService.java
+│   │   │   │   └── RefreshToken.java
+│   │   │   ├── config/                  # Configurações
+│   │   │   │   ├── WebMvcConfig.java
+│   │   │   │   ├── cache/
+│   │   │   │   └── crypto/
+│   │   │   ├── organization/            # Organizações (Mosque/Church)
+│   │   │   │   ├── domain/
+│   │   │   │   │   ├── Organization.java
+│   │   │   │   │   ├── Mosque.java
+│   │   │   │   │   └── Church.java
+│   │   │   │   ├── dto/
+│   │   │   │   ├── mapper/
+│   │   │   │   ├── repository/
+│   │   │   │   ├── service/
+│   │   │   │   └── exception/
+│   │   │   ├── pix/                     # Doações PIX
+│   │   │   │   ├── controller/
+│   │   │   │   ├── domain/
+│   │   │   │   ├── dto/
+│   │   │   │   ├── exception/
+│   │   │   │   ├── infrastructure/
+│   │   │   │   ├── PixChargeService.java
+│   │   │   │   └── PixChargeRepository.java
+│   │   │   ├── ratelimit/               # Rate Limiting (AOP)
+│   │   │   │   ├── annotations/
+│   │   │   │   ├── keygenerators/
+│   │   │   │   ├── RateLimitAspect.java
+│   │   │   │   └── RateLimitService.java
+│   │   │   ├── security/                # Segurança
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── SecurityFilter.java
+│   │   │   │   └── TokenConfig.java
+│   │   │   ├── user/                    # Usuários
+│   │   │   │   ├── controller/
+│   │   │   │   ├── domain/
+│   │   │   │   ├── dto/
+│   │   │   │   ├── service/
+│   │   │   │   └── UserRepository.java
+│   │   │   └── SmartMesquitaApiApplication.java
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── db/migration/            # Flyway migrations
+│   └── test/                            # Testes
+│       └── java/br/com/smartmesquitaapi/
+├── docker-compose.yml                   # Redis via Docker
+├── pom.xml                              # Dependências Maven
+├── README.md                            # Este arquivo
+├── API_DOCUMENTATION.md                 # Documentação da API
+└── TESTES.md                            # Guia de testes
+```
+
+### Módulos Principais
+
+- **api** - Exceções e DTOs globais
+- **auth** - Autenticação e autorização
+- **organization** - Gerenciamento de organizações (Mosques/Churches)
+- **pix** - Sistema de doações PIX
+- **ratelimit** - Rate limiting via AOP
+- **security** - Configurações de segurança
+- **user** - Gerenciamento de usuários
+
+---
+
+## 🔄 Roadmap
+
+### ✅ Implementado
+
+- [x] Autenticação JWT com refresh tokens
+- [x] Cadastro de organizações (Mosque/Church)
+- [x] Geração de QR Codes PIX
+- [x] Validação de CNPJ
+- [x] Rate limiting
+- [x] Criptografia de dados sensíveis
+- [x] Exceções customizadas
+- [x] Repositório de organizações
+- [x] Validações completas
+
+### 🚧 Em Desenvolvimento
+
+- [ ] Auditoria com timestamps (createdAt, updatedAt)
+- [ ] Controller dedicado para organizações
+- [ ] Paginação de listagens
+- [ ] Testes unitários completos
+- [ ] Documentação Swagger completa
+
+### 📋 Planejado
+
+- [ ] Webhooks para notificações de pagamento
+- [ ] Dashboard administrativo
+- [ ] Relatórios e estatísticas
+- [ ] Integração com gateway de pagamento
+- [ ] API de reconciliação bancária
+- [ ] Multi-tenancy
+- [ ] Soft delete
+- [ ] GraphQL API
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Siga os passos:
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Add: nova feature incrível'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
+
+### Padrões de Commit
+
+- `Add:` - Nova funcionalidade
+- `Update:` - Atualização de funcionalidade existente
+- `Fix:` - Correção de bug
+- `Refactor:` - Refatoração de código
+- `Docs:` - Documentação
+- `Test:` - Testes
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+## 👥 Autores
+
+- **Seu Nome** - *Desenvolvedor Principal* - [@seu-usuario](https://github.com/seu-usuario)
+
+---
+
+## 📞 Contato
+
+- Email: contato@smartmesquita.com
+- GitHub: [@seu-usuario](https://github.com/seu-usuario)
+- LinkedIn: [Seu Nome](https://linkedin.com/in/seu-perfil)
+
+---
+
+## 🙏 Agradecimentos
+
+- Spring Team pela excelente documentação
+- Comunidade Java por todo o suporte
+- ZXing pela biblioteca de QR Codes
+
+---
+
+<div align="center">
+
+**Feito com ❤️ e ☕ por Smart Mesquita Team**
+
+</div>
