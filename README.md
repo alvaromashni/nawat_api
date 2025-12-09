@@ -1,4 +1,4 @@
-# 🕌 Smart Mesquita API
+# 🕌 Nawat API
 
 <div align="center">
 
@@ -36,7 +36,7 @@
 
 ## 🎯 Sobre o Projeto
 
-**Smart Mesquita API** é uma solução completa para gestão de doações via PIX para organizações religiosas (mesquitas e igrejas). O sistema permite o gerenciamento de organizações, autenticação segura, geração de QR Codes PIX e controle completo de doações.
+**Nawat API** é uma solução completa para gestão de doações via PIX para organizações religiosas (mesquitas e igrejas). O sistema permite o gerenciamento de organizações, autenticação segura, geração de QR Codes PIX e controle completo de doações.
 
 ### 🌟 Principais Características
 
