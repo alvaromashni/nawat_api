@@ -1,4 +1,4 @@
-# 🕌 Smart Mesquita API
+# 🕌 Nawat API
 
 <div align="center">
 
@@ -36,7 +36,7 @@
 
 ## 🎯 Sobre o Projeto
 
-**Smart Mesquita API** é uma solução completa para gestão de doações via PIX para organizações religiosas (mesquitas e igrejas). O sistema permite o gerenciamento de organizações, autenticação segura, geração de QR Codes PIX e controle completo de doações.
+**Nawat API** é uma solução completa para gestão de doações via PIX para organizações religiosas (mesquitas e igrejas). O sistema permite o gerenciamento de organizações, autenticação segura, geração de QR Codes PIX e controle completo de doações.
 
 ### 🌟 Principais Características
 
@@ -254,9 +254,9 @@ O arquivo `src/main/resources/application.properties` contém as configurações
 spring.application.name=smartMesquitaApi
 
 # Database
-spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5433/smartMesquita}
+spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5433/seudb}
 spring.datasource.username=${DATABASE_USERNAME:postgres}
-spring.datasource.password=${DATABASE_PASSWORD:Alvinho@25}
+spring.datasource.password=${DATABASE_PASSWORD:suasenha}
 spring.jpa.hibernate.ddl-auto=create
 
 # JWT
