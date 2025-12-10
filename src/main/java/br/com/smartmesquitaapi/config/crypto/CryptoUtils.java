@@ -32,7 +32,10 @@ public final class CryptoUtils {
     private static SecretKey loadKeyFromEnv(){
         String b64 = System.getenv("ENCRYPTION_KEY_BASE64");
         if (b64 == null || b64.isBlank()){
-            throw new IllegalStateException("Env var ENCRYPTION_KEY_BASE64 não encontrada. Gere uma chave e configure-a.");
+            // ATENÇÃO: Esta chave é apenas para DESENVOLVIMENTO!
+            // Em PRODUÇÃO, configure a variável de ambiente ENCRYPTION_KEY_BASE64
+            System.err.println("⚠️  AVISO: Usando chave de criptografia padrão (DESENVOLVIMENTO). Configure ENCRYPTION_KEY_BASE64 em produção!");
+            b64 = "kPH+bIxk5D2deZiIxcaaaADya06fnjV1dCaAkKdYRGs="; // Chave de desenvolvimento (256-bit)
         }
         byte[] keyBites = Base64.getDecoder().decode(b64);
         return new SecretKeySpec(keyBites, ALG);

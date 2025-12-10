@@ -15,8 +15,8 @@ import java.io.Serializable;
 @Builder
 public class Notification implements Serializable {
 
-    private boolean donationDone;
-    private boolean dailySummary;
-    private boolean totemMaintenance;
+    private boolean donationDone = false;
+    private boolean dailySummary = false;
+    private boolean totemMaintenance = false;
 
 }

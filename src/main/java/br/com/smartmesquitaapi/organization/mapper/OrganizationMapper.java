@@ -7,9 +7,11 @@ import br.com.smartmesquitaapi.organization.dto.ChurchDto;
 import br.com.smartmesquitaapi.organization.dto.MosqueDto;
 import br.com.smartmesquitaapi.organization.dto.OrganizationDto;
 import br.com.smartmesquitaapi.user.domain.Address;
+import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.Notification;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.dto.AddressDto;
+import br.com.smartmesquitaapi.user.dto.BankDetailsDto;
 import br.com.smartmesquitaapi.user.dto.NotificationsSettingsDto;
 import br.com.smartmesquitaapi.user.dto.OrganizationProfileDto;
 import org.springframework.stereotype.Component;
@@ -62,7 +64,7 @@ public class OrganizationMapper {
     public void updateOrganizationFromDto(OrganizationDto dto, Organization org){
         if (dto != null) {
             org.setAddress(mapToAddress(dto.getAddressDto()));
-            org.setBankDetails(dto.getBankDetails());
+            org.setBankDetails(mapToBankDetails(dto.getBankDetails()));
             org.setAdministratorName(dto.getAdministratorName());
             org.setCnpj(dto.getCnpj());
             org.setFoundationDate(dto.getFoundationDate());
@@ -97,7 +99,7 @@ public class OrganizationMapper {
     private ChurchDto mapToChurchDto(Church church){
         ChurchDto dto = new ChurchDto();
         dto.setAdministratorName(church.getAdministratorName());
-        dto.setBankDetails(church.getBankDetails());
+        dto.setBankDetails(mapToBankDetailsDto(church.getBankDetails()));
         dto.setCnpj(church.getCnpj());
         dto.setFoundationDate(church.getFoundationDate());
         dto.setOpeningHours(church.getOpeningHours());
@@ -113,7 +115,7 @@ public class OrganizationMapper {
 
         MosqueDto dto = new MosqueDto();
         dto.setAdministratorName(mosque.getAdministratorName());
-        dto.setBankDetails(mosque.getBankDetails());
+        dto.setBankDetails(mapToBankDetailsDto(mosque.getBankDetails()));
         dto.setCnpj(mosque.getCnpj());
         dto.setFoundationDate(mosque.getFoundationDate());
         dto.setOpeningHours(mosque.getOpeningHours());
@@ -129,7 +131,7 @@ public class OrganizationMapper {
     private static Church getChurch(OrganizationDto dto, Address address) {
         Church church = new Church();
         church.setAdministratorName(dto.getAdministratorName());
-        church.setBankDetails(dto.getBankDetails());
+        church.setBankDetails(mapToBankDetails(dto.getBankDetails()));
         church.setCnpj(dto.getCnpj());
         church.setFoundationDate(dto.getFoundationDate());
         church.setOpeningHours(dto.getOpeningHours());
@@ -142,7 +144,7 @@ public class OrganizationMapper {
     private static Mosque getMosque(OrganizationDto dto,  Address address){
         Mosque mosque = new Mosque();
         mosque.setAdministratorName(dto.getAdministratorName());
-        mosque.setBankDetails(dto.getBankDetails());
+        mosque.setBankDetails(mapToBankDetails(dto.getBankDetails()));
         mosque.setCnpj(dto.getCnpj());
         mosque.setFoundationDate(dto.getFoundationDate());
         mosque.setOpeningHours(dto.getOpeningHours());
@@ -168,6 +170,34 @@ public class OrganizationMapper {
             return address;
         }
         return null;
+    }
+
+    private static BankDetails mapToBankDetails(BankDetailsDto dto) {
+        if (dto == null) return null;
+
+        BankDetails bankDetails = new BankDetails();
+        bankDetails.setBankName(dto.getBankName());
+        bankDetails.setAgency(dto.getAgency());
+        bankDetails.setAccountNumber(dto.getAccountNumber());
+        bankDetails.setAccountHolder(dto.getAccountHolder());
+        bankDetails.setPixKey(dto.getPixKey());
+        bankDetails.setPixKeyType(dto.getPixKeyType());
+
+        return bankDetails;
+    }
+
+    private BankDetailsDto mapToBankDetailsDto(BankDetails entity) {
+        if (entity == null) return null;
+
+        BankDetailsDto dto = new BankDetailsDto();
+        dto.setBankName(entity.getBankName());
+        dto.setAgency(entity.getAgency());
+        dto.setAccountNumber(entity.getAccountNumber());
+        dto.setAccountHolder(entity.getAccountHolder());
+        dto.setPixKey(entity.getPixKey());
+        dto.setPixKeyType(entity.getPixKeyType());
+
+        return dto;
     }
 
 }

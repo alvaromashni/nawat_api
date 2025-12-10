@@ -14,10 +14,10 @@ public class BankDetails {
     @Column(length = 100)
     private String bankName;
 
-    @Column(length = 20)
+    @Column(length = 60)
     private String agency;
 
-    @Column(length = 40)
+    @Column(length = 500)
     @Convert(converter = CryptoConverter.class)
     private String accountNumber;
 
@@ -34,7 +34,7 @@ public class BankDetails {
 
     private LocalDateTime verifiedAt;
 
-    @Column(length = 255)
+    @Column(length = 500)
     @Convert(converter = CryptoConverter.class)
     private String pixKey;
 

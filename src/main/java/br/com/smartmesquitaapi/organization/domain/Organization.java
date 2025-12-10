@@ -24,7 +24,6 @@ public abstract class Organization {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @NotBlank(message = "Nome da organização é obrigatório")
     @Column(nullable = false)
     private String orgName;
 
@@ -34,11 +33,9 @@ public abstract class Organization {
     @PastOrPresent(message = "Data de fundação não pode ser no futuro")
     private LocalDate foundationDate;
 
-    @NotBlank(message = "Nome do administrador é obrigatório")
     @Column(nullable = false)
     private String administratorName;
 
-    @NotBlank(message = "CNPJ é obrigatório")
     @Pattern(regexp = "\\d{14}", message = "CNPJ deve conter 14 dígitos numéricos")
     @Column(unique = true, nullable = false, length = 14)
     private String cnpj;

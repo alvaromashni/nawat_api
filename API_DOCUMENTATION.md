@@ -1,4 +1,4 @@
-# Smart Mesquita API - Documentação dos Endpoints
+eu es# Smart Mesquita API - Documentação dos Endpoints
 
 ## Índice
 
@@ -56,11 +56,17 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 1. Registrar Novo Usuário
 
-Cria uma nova conta de usuário.
+Cria uma nova conta de usuário, que pode ser um usuário padrão ou um proprietário de organização (mesquita ou igreja).
 
 **Endpoint:** `POST /api/v1/auth/register`
 
 **Autenticação:** Não requerida
+
+---
+
+#### 1.1. Registro de Usuário Padrão
+
+Ao registrar um usuário que não é proprietário de uma organização, basta omitir o campo `organization`.
 
 **Request Body:**
 
@@ -68,39 +74,166 @@ Cria uma nova conta de usuário.
 {
   "name": "João Silva",
   "email": "joao@example.com",
-  "password": "senha123",
-  "role": "USER",
-  "bankDetails": {
-    "pixKey": "joao@example.com",
-    "pixKeyType": "EMAIL",
-    "bankName": "Banco do Brasil",
-    "accountHolder": "João Silva",
-    "cnpj": "12345678000199",
-    "bankBranch": "0001",
-    "accountNumber": "12345-6"
-  }
+  "password": "senha123"
 }
 ```
 
 **Campos Obrigatórios:**
 
-- `name` (string, 3-100 caracteres): Nome completo
-- `email` (string, formato email): Email válido
-- `password` (string, mínimo 6 caracteres): Senha
-- `role` (enum): `ADMIN`, `STAFF`, `MESQUITA_OWNER`, ou `USER`
+- `name` (string, 3-100 caracteres): Nome completo do usuário
+- `email` (string, formato email): Email válido e único
+- `password` (string, mínimo 6 caracteres): Senha de acesso
 
-**Campos Opcionais:**
+---
 
-- `bankDetails` (object): Dados bancários (obrigatório apenas para `MESQUITA_OWNER`)
-  - `pixKey` (string): Chave PIX
-  - `pixKeyType` (enum): `EMAIL`, `PHONE`, `CPF`, `CNPJ`, `EVP`
-  - `bankName` (string): Nome do banco
-  - `accountHolder` (string): Titular da conta
-  - `cnpj` (string): CNPJ da mesquita
-  - `bankBranch` (string): Agência
-  - `accountNumber` (string): Número da conta
+#### 1.2. Registro de Proprietário de Mesquita
 
-**Response (201 Created):**
+Para registrar um usuário como proprietário de uma **mesquita**, inclua o objeto `organization` com o campo **`imaName`**.
+
+**⚠️ IMPORTANTE:** Para mesquitas, você **DEVE** incluir o campo `imaName` (nome do Imã) e **NÃO** deve incluir o campo `priestName`.
+
+**Request Body:**
+
+```json
+{
+  "name": "Admin da Mesquita",
+  "email": "admin@mesquita.com",
+  "password": "senhaForte123",
+  "organization": {
+    "orgName": "Mesquita Central",
+    "phoneNumber": "+5511987654321",
+    "foundationDate": "2010-05-15",
+    "administratorName": "Nome do Administrador",
+    "cnpj": "12345678000199",
+    "openingHours": "Segunda a Sexta: 9h-18h",
+    "imaName": "Nome do Imã",
+    "bankDetails": {
+      "pixKey": "12345678000199",
+      "pixKeyType": "CNPJ",
+      "bankName": "Banco do Brasil",
+      "agency": "0001",
+      "accountNumber": "12345-6",
+      "accountHolder": "Mesquita Central"
+    },
+    "addressDto": {
+      "street": "Rua da Mesquita",
+      "number": "100",
+      "neighborhood": "Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipcode": "01000-000",
+      "complement": "Ao lado do mercado"
+    }
+  }
+}
+```
+
+**Campos Obrigatórios (Mesquita):**
+
+- `name` (string, 3-100 caracteres): Nome completo do usuário
+- `email` (string, formato email): Email válido e único
+- `password` (string, mínimo 6 caracteres): Senha de acesso
+- `organization.orgName` (string): Nome da mesquita
+- `organization.administratorName` (string): Nome do administrador responsável
+- `organization.cnpj` (string, 14 dígitos): CNPJ válido da organização
+- **`organization.imaName` (string): Nome do Imã** ← **Campo específico de mesquita**
+- `organization.bankDetails.pixKey` (string): Chave PIX para recebimento de doações
+- `organization.bankDetails.pixKeyType` (enum): Tipo da chave PIX (`EMAIL`, `PHONE`, `CPF`, `CNPJ`, `EVP`)
+- `organization.bankDetails.accountHolder` (string): Nome do titular da conta bancária
+
+---
+
+#### 1.3. Registro de Proprietário de Igreja
+
+Para registrar um usuário como proprietário de uma **igreja**, inclua o objeto `organization` com o campo **`priestName`**.
+
+**⚠️ IMPORTANTE:** Para igrejas, você **DEVE** incluir o campo `priestName` (nome do Padre) e **NÃO** deve incluir o campo `imaName`.
+
+**Request Body:**
+
+```json
+{
+  "name": "Admin da Igreja",
+  "email": "admin@igreja.com",
+  "password": "outraSenhaForte456",
+  "organization": {
+    "orgName": "Igreja São Francisco",
+    "phoneNumber": "+5521912345678",
+    "foundationDate": "1990-01-20",
+    "administratorName": "Padre Miguel",
+    "cnpj": "98765432000188",
+    "openingHours": "Todos os dias: 8h-20h",
+    "priestName": "Padre Miguel",
+    "bankDetails": {
+      "pixKey": "admin@igreja.com",
+      "pixKeyType": "EMAIL",
+      "bankName": "Caixa Econômica Federal",
+      "agency": "0002",
+      "accountNumber": "98765-4",
+      "accountHolder": "Igreja São Francisco"
+    },
+    "addressDto": {
+      "street": "Avenida da Igreja",
+      "number": "200",
+      "neighborhood": "Bairro da Praça",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "zipcode": "20000-000"
+    }
+  }
+}
+```
+
+**Campos Obrigatórios (Igreja):**
+
+- `name` (string, 3-100 caracteres): Nome completo do usuário
+- `email` (string, formato email): Email válido e único
+- `password` (string, mínimo 6 caracteres): Senha de acesso
+- `organization.orgName` (string): Nome da igreja
+- `organization.administratorName` (string): Nome do administrador responsável
+- `organization.cnpj` (string, 14 dígitos): CNPJ válido da organização
+- **`organization.priestName` (string): Nome do Padre** ← **Campo específico de igreja**
+- `organization.bankDetails.pixKey` (string): Chave PIX para recebimento de doações
+- `organization.bankDetails.pixKeyType` (enum): Tipo da chave PIX (`EMAIL`, `PHONE`, `CPF`, `CNPJ`, `EVP`)
+- `organization.bankDetails.accountHolder` (string): Nome do titular da conta bancária
+
+---
+
+#### Campos Opcionais da Organização (Mesquita e Igreja):
+
+- `organization.phoneNumber` (string): Telefone de contato
+- `organization.foundationDate` (date): Data de fundação (formato `YYYY-MM-DD`)
+- `organization.openingHours` (string): Horário de funcionamento
+- `organization.bankDetails.bankName` (string): Nome do banco
+- `organization.bankDetails.agency` (string): Agência bancária
+- `organization.bankDetails.accountNumber` (string): Número da conta
+- `organization.addressDto` (object): Endereço completo da organização
+  - `street` (string): Nome da rua
+  - `number` (string): Número
+  - `neighborhood` (string): Bairro
+  - `city` (string): Cidade
+  - `state` (string): Estado (sigla, ex: SP, RJ)
+  - `zipcode` (string): CEP
+  - `complement` (string, opcional): Complemento
+
+---
+
+#### Diferenças entre Mesquita e Igreja
+
+| Campo | Mesquita | Igreja |
+|-------|----------|--------|
+| **Campo específico** | `imaName` (obrigatório) | `priestName` (obrigatório) |
+| **Campos comuns** | `orgName`, `cnpj`, `administratorName`, `bankDetails`, etc. | `orgName`, `cnpj`, `administratorName`, `bankDetails`, etc. |
+
+**Regra:** A API detecta automaticamente o tipo de organização baseado no campo presente:
+- Se o JSON contém `imaName` → cria uma **Mesquita** (Mosque)
+- Se o JSON contém `priestName` → cria uma **Igreja** (Church)
+
+---
+
+#### Response (201 Created)
+
+A resposta é a mesma para todos os tipos de registro e inclui os tokens de acesso e os dados básicos do usuário criado.
 
 ```json
 {
@@ -109,9 +242,9 @@ Cria uma nova conta de usuário.
   "type": "Bearer",
   "user": {
     "id": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "role": "USER",
+    "name": "Admin da Mesquita",
+    "email": "admin@mesquita.com",
+    "role": "ORG_OWNER",
     "isActive": true,
     "hasPixKey": true
   }
@@ -867,7 +1000,7 @@ Importa um extrato bancário para reconciliação (futuro).
 
 Cria um novo usuário (admin).
 
-**Endpoint:** `POST /api/v1/users/post/user`
+**Endpoint:** `POST /api/v1/admin/post/user`
 
 **Autenticação:** Requerida (Bearer Token - apenas ADMIN)
 
@@ -899,7 +1032,7 @@ Cria um novo usuário (admin).
 
 Busca um usuário pelo email.
 
-**Endpoint:** `GET /api/v1/users/get/user?email={email}`
+**Endpoint:** `GET /api/v1/admin/get/user?email={email}`
 
 **Autenticação:** Requerida (Bearer Token - apenas ADMIN)
 
@@ -910,10 +1043,8 @@ Busca um usuário pelo email.
 **Response (200 OK):**
 
 ```
-(Sem conteúdo - apenas status 200)
+(Corpo da resposta varia, mas deve retornar o objeto do usuário)
 ```
-
-**Nota:** Endpoint retorna 200 vazio (implementação pode precisar ajuste)
 
 ---
 
@@ -921,7 +1052,7 @@ Busca um usuário pelo email.
 
 Remove um usuário do sistema.
 
-**Endpoint:** `DELETE /api/v1/users/delete/user?email={email}`
+**Endpoint:** `DELETE /api/v1/admin/delete/user?email={email}`
 
 **Autenticação:** Requerida (Bearer Token - apenas ADMIN)
 
@@ -941,7 +1072,7 @@ Remove um usuário do sistema.
 
 Atualiza dados de um usuário existente.
 
-**Endpoint:** `PUT /api/v1/users/put/user?email={email}`
+**Endpoint:** `PUT /api/v1/admin/put/user?email={email}`
 
 **Autenticação:** Requerida (Bearer Token - apenas ADMIN)
 
@@ -970,7 +1101,7 @@ Atualiza dados de um usuário existente.
 
 Aprova/verifica a chave PIX de um usuário.
 
-**Endpoint:** `POST /api/v1/users/{userId}/verify-pix?proofUrl={url}`
+**Endpoint:** `POST /api/v1/admin/{userId}/verify-pix?proofUrl={url}`
 
 **Autenticação:** Requerida (Bearer Token - apenas ADMIN)
 
@@ -1214,17 +1345,19 @@ Alguns endpoints possuem limitação de taxa para prevenir abuso:
 ```bash
 POST /api/v1/auth/register
 {
-  "name": "Mesquita Central",
-  "email": "contato@mesquitacentral.com",
-  "password": "senhaSegura123",
-  "role": "MESQUITA_OWNER",
-  "bankDetails": {
-    "pixKey": "12345678000199",
-    "pixKeyType": "CNPJ",
-    "bankName": "Banco do Brasil",
-    "accountHolder": "Mesquita Central",
+  "name": "Admin da Mesquita",
+  "email": "admin@mesquita.com",
+  "password": "senhaForte123",
+  "organization": {
+    "orgName": "Mesquita Central",
+    "administratorName": "Admin da Mesquita",
     "cnpj": "12345678000199",
-    "accountNumber": "12345-6"
+    "imaName": "Imã da Mesquita",
+    "bankDetails": {
+      "pixKey": "12345678000199",
+      "pixKeyType": "CNPJ",
+      "accountHolder": "Mesquita Central"
+    }
   }
 }
 ```
@@ -1358,6 +1491,11 @@ Para dúvidas ou problemas com a API, entre em contato com a equipe de desenvolv
 - ✅ Exemplos de request/response para Mosque e Church
 - ✅ Documentação de validações e exceções
 - ✅ Adicionado changelog com histórico de versões
+- ✅ **Melhorada documentação do endpoint `/register`:**
+  - Separada em 3 subseções: Usuário Padrão, Mesquita e Igreja
+  - Destacada diferença entre `imaName` (Mesquita) e `priestName` (Igreja)
+  - Adicionada tabela comparativa entre Mesquita e Igreja
+  - Explicado como a API detecta automaticamente o tipo de organização
 
 ---
 
