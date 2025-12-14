@@ -16,10 +16,21 @@ WORKDIR /app
 
 # Cria usuário não-root para segurança
 RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
 
 # Copia o JAR da stage anterior
 COPY --from=build /app/target/smartMesquitaApi-*.jar app.jar
+
+# Cria script de entrada para converter DATABASE_URL
+RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
+    echo 'if [ -n "$JDBC_DATABASE_URL" ]; then' >> /app/entrypoint.sh && \
+    echo '  # Remove postgres:// e adiciona jdbc:postgresql://' >> /app/entrypoint.sh && \
+    echo '  export SPRING_DATASOURCE_URL=$(echo "$JDBC_DATABASE_URL" | sed "s|^postgres://|jdbc:postgresql://|")' >> /app/entrypoint.sh && \
+    echo 'fi' >> /app/entrypoint.sh && \
+    echo 'exec java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar "$@"' >> /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh && \
+    chown spring:spring /app/entrypoint.sh
+
+USER spring:spring
 
 # Expõe a porta (Render usa $PORT)
 EXPOSE 8080
@@ -28,4 +39,4 @@ EXPOSE 8080
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 # Comando de execução
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]
