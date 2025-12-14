@@ -16,6 +16,7 @@ import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.PixKeyType;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.domain.UserRole;
+import br.com.smartmesquitaapi.user.dto.BankDetailsDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -152,13 +153,13 @@ class AuthServiceTest {
         mosqueDto.setOrgName("Mesquita Central");
         mosqueDto.setImaName("Ima João");
 
-        BankDetails bankDetails = new BankDetails();
-        bankDetails.setPixKey("joao@example.com");
-        bankDetails.setPixKeyType(PixKeyType.EMAIL);
-        bankDetails.setBankName("Banco do Brasil");
-        bankDetails.setAccountHolder("João Silva");
-        bankDetails.setAccountNumber("12345-6");
-        mosqueDto.setBankDetails(bankDetails);
+        BankDetailsDto bankDetailsDto = new BankDetailsDto();
+        bankDetailsDto.setPixKey("joao@example.com");
+        bankDetailsDto.setPixKeyType(PixKeyType.EMAIL);
+        bankDetailsDto.setBankName("Banco do Brasil");
+        bankDetailsDto.setAccountHolder("João Silva");
+        bankDetailsDto.setAccountNumber("12345-6");
+        mosqueDto.setBankDetails(bankDetailsDto);
 
         registerRequest.setOrganization(mosqueDto);
 

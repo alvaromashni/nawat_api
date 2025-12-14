@@ -14,6 +14,7 @@ import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.PixKeyType;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.user.domain.UserRole;
+import br.com.smartmesquitaapi.user.dto.BankDetailsDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -147,13 +148,13 @@ class AuthenticationFlowIntegrationTest {
         mosqueDto.setOrgName("Mesquita Central");
         mosqueDto.setImaName("Ima Silva");
 
-        BankDetails bankDetails = new BankDetails();
-        bankDetails.setPixKey("comercio@example.com");
-        bankDetails.setPixKeyType(PixKeyType.EMAIL);
-        bankDetails.setBankName("Caixa Econômica Federal");
-        bankDetails.setAccountHolder("Comércio LTDA");
-        bankDetails.setAccountNumber("98765-4");
-        mosqueDto.setBankDetails(bankDetails);
+        BankDetailsDto bankDetailsDto = new BankDetailsDto();
+        bankDetailsDto.setPixKey("comercio@example.com");
+        bankDetailsDto.setPixKeyType(PixKeyType.EMAIL);
+        bankDetailsDto.setBankName("Caixa Econômica Federal");
+        bankDetailsDto.setAccountHolder("Comércio LTDA");
+        bankDetailsDto.setAccountNumber("98765-4");
+        mosqueDto.setBankDetails(bankDetailsDto);
 
         RegisterUserRequest registerRequest = new RegisterUserRequest();
         registerRequest.setName("Comércio LTDA");

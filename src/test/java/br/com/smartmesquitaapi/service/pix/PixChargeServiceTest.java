@@ -5,6 +5,7 @@ import br.com.smartmesquitaapi.pix.domain.PixCharge;
 import br.com.smartmesquitaapi.pix.PixChargeRepository;
 import br.com.smartmesquitaapi.pix.PixChargeService;
 import br.com.smartmesquitaapi.pix.domain.PixChargeStatus;
+import br.com.smartmesquitaapi.organization.domain.Mosque;
 import br.com.smartmesquitaapi.user.domain.BankDetails;
 import br.com.smartmesquitaapi.user.domain.PixKeyType;
 import br.com.smartmesquitaapi.user.domain.User;
@@ -54,12 +55,17 @@ class PixChargeServiceTest {
         bankDetails.setIsVerified(true);
         bankDetails.setAccountHolder("Test User");
 
+        // Criar organização com BankDetails
+        Mosque organization = new Mosque();
+        organization.setOrgName("Test Mesquita Organization");
+        organization.setBankDetails(bankDetails);
+
         user = new User();
         user.setUserId(userId);
         user.setName("Test Mesquita"); // IMPORTANTE: nome é obrigatório
         user.setEmail("test@test.com");
         user.setEnabled(true);
-        user.setBankDetails(bankDetails);
+        user.setOrganization(organization);
 
         // Mock request válido
         request = new CreatePixChargeRequest();

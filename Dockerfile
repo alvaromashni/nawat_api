@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 
 # Copia o código fonte e faz o build
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Dmaven.test.skip=true
 
 # Stage 2: Imagem final otimizada
 FROM eclipse-temurin:21-jre-alpine
