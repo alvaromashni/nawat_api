@@ -33,9 +33,9 @@ CREATE TABLE pix_charges (
 
     -- Constraints
                              CONSTRAINT fk_pix_charges_user FOREIGN KEY (user_id)
-                                 REFERENCES users(id) ON DELETE CASCADE,
+                                 REFERENCES users(user_id) ON DELETE CASCADE,
                              CONSTRAINT fk_pix_charges_confirmed_by FOREIGN KEY (confirmed_by_user_id)
-                                 REFERENCES users(id) ON DELETE SET NULL,
+                                 REFERENCES users(user_id) ON DELETE SET NULL,
                              CONSTRAINT chk_status CHECK (status IN ('PENDING', 'PAID', 'CONFIRMED_MANUAL', 'EXPIRED', 'CANCELLED'))
 );
 
