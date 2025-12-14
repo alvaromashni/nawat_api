@@ -1,4 +1,4 @@
-# Docker Compose - Smart Mesquita API
+# Docker Compose - Smart Mesquita API (Production Ready)
 
 version: '3.8'
 
@@ -6,18 +6,41 @@ services:
   redis:
     image: redis:7-alpine
     container_name: smartmesquita-redis
-    command: redis-server --appendonly yes
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --tcp-backlog 511
+      --timeout 0
+      --tcp-keepalive 300
+      --loglevel notice
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"  # Apenas localhost
     volumes:
       - redis_data:/data
     networks:
       - smartmesquita-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 256M
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
+      start_period: 10s
+    environment:
+      - TZ=America/Fortaleza
 
 volumes:
   redis_data:
@@ -28,26 +51,47 @@ networks:
     driver: bridge
 
 # ====================================================================
+# CONFIGURAÇÃO PARA PRODUÇÃO
+# ====================================================================
+#
+# IMPORTANTE: Antes de iniciar, configure no arquivo .env:
+#   REDIS_PASSWORD=sua_senha_forte_aqui
+#
+# ====================================================================
 # Como usar:
 # ====================================================================
 #
-# 1. Iniciar Redis:
+# 1. Criar arquivo .env (se não existir):
+#    cp .env.example .env
+#    # Edite o .env e defina REDIS_PASSWORD
+#
+# 2. Iniciar Redis:
 #    docker-compose up -d
 #
-# 2. Parar:
+# 3. Parar:
 #    docker-compose down
 #
-# 3. Ver logs:
+# 4. Ver logs:
 #    docker-compose logs -f redis
 #
-# 4. Acessar Redis:
-#    localhost:6379
-#
-# 5. Testar conexão:
-#    docker exec -it smartmesquita-redis redis-cli ping
+# 5. Testar conexão (com autenticação):
+#    docker exec -it smartmesquita-redis redis-cli -a $REDIS_PASSWORD ping
 #    (deve retornar: PONG)
 #
+# 6. Acessar CLI do Redis:
+#    docker exec -it smartmesquita-redis redis-cli -a $REDIS_PASSWORD
+#
 # ====================================================================
-# NOTA: Seu PostgreSQL e PgAdmin locais continuam funcionando
-# normalmente. Este docker-compose adiciona APENAS o Redis.
+# Melhorias de Produção Implementadas:
+# ====================================================================
+#
+# ✅ Autenticação obrigatória (requirepass)
+# ✅ Limite de memória (256MB) com política LRU
+# ✅ Porta acessível apenas via localhost (127.0.0.1)
+# ✅ Restart automático (unless-stopped)
+# ✅ Limites de CPU e memória do container
+# ✅ Persistência com AOF + RDB snapshots
+# ✅ Healthcheck aprimorado
+# ✅ Timezone configurado (America/Fortaleza)
+#
 # ====================================================================

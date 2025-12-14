@@ -1,4 +1,9 @@
 HELP.md
+API_DOCUMENTATION.md
+DEPLOY.md
+
+.env
+
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
