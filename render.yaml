@@ -21,7 +21,7 @@ services:
     healthCheckPath: /actuator/health
 
   # Banco de dados PostgreSQL
-  - type: pgsql
+  - type: postgresql
     name: smart-mesquita-db
     databaseName: smartmesquita
     user: smartmesquita
