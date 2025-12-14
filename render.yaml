@@ -20,17 +20,17 @@ services:
         value: -Xmx512m -Xms256m
     healthCheckPath: /actuator/health
 
-  # Banco de dados PostgreSQL
-  - type: postgresql
-    name: smart-mesquita-db
-    databaseName: smartmesquita
-    user: smartmesquita
-    plan: free
-    ipAllowList: []
-
   # Redis (para rate limiting e sessions)
-  - type: redis
+  - type: keyvalue
     name: smart-mesquita-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+# Banco de dados PostgreSQL
+databases:
+  - name: smart-mesquita-db
+    databaseName: smartmesquita
+    user: smartmesquita
+    plan: free
     ipAllowList: []
