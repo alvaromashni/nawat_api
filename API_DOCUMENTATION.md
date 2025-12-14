@@ -6,14 +6,15 @@ eu es# Smart Mesquita API - Documentação dos Endpoints
 2. [Autenticação](#autenticação)
 3. [Endpoints de Autenticação](#endpoints-de-autenticação)
 4. [Endpoints de Organizações](#endpoints-de-organizações)
-5. [Endpoints de Doações PIX](#endpoints-de-doações-pix)
-6. [Endpoints Administrativos - PIX](#endpoints-administrativos---pix)
-7. [Endpoints Administrativos - Usuários](#endpoints-administrativos---usuários)
-8. [Endpoints de Debug](#endpoints-de-debug)
-9. [Modelos de Dados](#modelos-de-dados)
-10. [Códigos de Status HTTP](#códigos-de-status-http)
-11. [Rate Limiting](#rate-limiting)
-12. [Changelog](#changelog)
+5. [Endpoints de Totens (API Keys)](#endpoints-de-totens-api-keys)
+6. [Endpoints de Doações PIX](#endpoints-de-doações-pix)
+7. [Endpoints Administrativos - PIX](#endpoints-administrativos---pix)
+8. [Endpoints Administrativos - Usuários](#endpoints-administrativos---usuários)
+9. [Endpoints de Debug](#endpoints-de-debug)
+10. [Modelos de Dados](#modelos-de-dados)
+11. [Códigos de Status HTTP](#códigos-de-status-http)
+12. [Rate Limiting](#rate-limiting)
+13. [Changelog](#changelog)
 
 ---
 
@@ -675,6 +676,96 @@ Atualiza as preferências de notificação do usuário.
 ```
 (Sem conteúdo - apenas status 200)
 ```
+
+---
+
+## Endpoints de Totens (API Keys)
+
+### 4.5. Criar Chave de API para Totem
+
+Gera uma chave de API exclusiva para autenticar totens de doação da organização. Esta chave permite que totens (dispositivos físicos de doação) criem cobranças PIX em nome da organização sem expor credenciais de usuário.
+
+**⚠️ IMPORTANTE:**
+- Apenas usuários que possuem uma organização podem criar chaves de totem
+- Cada chave gerada é única e começa com o prefixo `totem_`
+- Guarde a chave retornada em local seguro - ela não poderá ser visualizada novamente
+- Use essa chave no header `X-API-Key` nas requisições do totem
+
+**Endpoint:** `POST /api/v1/organizations/me/totems`
+
+**Autenticação:** Requerida (Bearer Token - usuário deve pertencer a uma organização)
+
+**Request Body:**
+
+```json
+{
+  "name": "Totem Entrada Principal"
+}
+```
+
+**Campos Obrigatórios:**
+
+- `name` (string): Nome identificador do totem (ex: "Totem Mezanino", "Totem Hall Principal")
+
+**Response (200 OK):**
+
+```json
+{
+  "name": "Totem Entrada Principal",
+  "keyValue": "totem_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+}
+```
+
+**Descrição dos campos de resposta:**
+
+- `name` (string): Nome do totem conforme enviado na requisição
+- `keyValue` (string): Chave de API gerada. **IMPORTANTE:** Armazene esta chave de forma segura, pois ela não será exibida novamente
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "timestamp": "2025-12-13T10:30:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Usuário não pertence a uma organização.",
+  "path": "/api/v1/organizations/me/totems"
+}
+```
+
+---
+
+### Como usar a chave do totem
+
+Após criar a chave de API, o totem deve incluí-la no header `X-API-Key` de todas as requisições:
+
+```http
+POST /api/v1/donations/{localId}/pix
+Content-Type: application/json
+X-API-Key: totem_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+
+{
+  "amountCents": 5000,
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000",
+  "expiresMinutes": 30
+}
+```
+
+**Fluxo de autenticação do totem:**
+
+1. Administrador da organização cria chave de API via endpoint `/api/v1/organizations/me/totems`
+2. Chave é configurada no dispositivo totem (armazenamento seguro)
+3. Totem usa a chave no header `X-API-Key` para criar cobranças PIX
+4. API valida a chave e identifica automaticamente a organização do totem
+5. Cobrança é criada em nome da organização associada à chave
+
+**Segurança:**
+
+- ✅ Cada chave é única e vinculada a uma organização específica
+- ✅ Chaves são hasheadas no banco de dados (não armazenadas em texto plano)
+- ✅ Prefixo `totem_` facilita identificação e auditoria
+- ⚠️ Mantenha as chaves em segredo - qualquer pessoa com a chave pode criar cobranças em nome da organização
+- ⚠️ Em caso de comprometimento, solicite a criação de uma nova chave e desative a anterior
 
 ---
 
@@ -1426,12 +1517,45 @@ Authorization: Bearer {staff_token}
 
 Para dúvidas ou problemas com a API, entre em contato com a equipe de desenvolvimento.
 
-**Versão da API:** v1
-**Última Atualização:** 09/12/2025
+**Versão da API:** v1.2
+**Última Atualização:** 13/12/2025
 
 ---
 
 ## Changelog
+
+### v1.2.0 - 13/12/2025
+
+#### ✨ Novidades
+
+**Endpoints de Totens (API Keys):**
+- ✅ **Adicionado**: `POST /api/v1/organizations/me/totems` - Criar chave de API para totem
+- ✅ Sistema de autenticação por API Key para totens de doação
+- ✅ Geração automática de chaves com prefixo `totem_` e UUID único
+- ✅ Chaves hasheadas no banco de dados para maior segurança
+- ✅ Suporte para autenticação via header `X-API-Key`
+
+**Funcionalidade:**
+- ✅ Organizações podem criar múltiplas chaves de API para seus totens
+- ✅ Cada chave é vinculada automaticamente à organização do criador
+- ✅ Totens podem criar cobranças PIX usando a API Key sem expor credenciais de usuário
+- ✅ Identificação automática da organização através da chave do totem
+
+**Segurança:**
+- ✅ Validação de que apenas usuários com organização podem criar chaves
+- ✅ Armazenamento seguro das chaves (hash no banco de dados)
+- ✅ Prefixo identificador `totem_` para facilitar auditoria
+
+#### 📚 Documentação
+
+- ✅ Adicionada seção completa de **Endpoints de Totens (API Keys)**
+- ✅ Documentado endpoint de criação de chaves de totem
+- ✅ Exemplos de uso com header `X-API-Key`
+- ✅ Fluxo completo de autenticação de totens
+- ✅ Recomendações de segurança para armazenamento de chaves
+- ✅ Atualizado índice da documentação
+
+---
 
 ### v1.1.0 - 09/12/2025
 
@@ -1513,4 +1637,4 @@ Para dúvidas ou problemas com a API, entre em contato com a equipe de desenvolv
 
 ---
 
-**Total de Endpoints:** 24 (4 novos na v1.1.0)
+**Total de Endpoints:** 25 (1 novo na v1.2.0, 4 novos na v1.1.0)
