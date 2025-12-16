@@ -1,6 +1,7 @@
 package br.com.smartmesquitaapi.security;
 
 import jakarta.servlet.DispatcherType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,9 @@ public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
     private final ApiKeyAuthFilter apiKeyAuthFilter;
+
+    @Value("${cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     public SecurityConfig(SecurityFilter securityFilter, ApiKeyAuthFilter apiKeyAuthFilter) {
         this.securityFilter = securityFilter;
@@ -56,10 +60,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permite a origem do seu Frontend (ajuste se necessário)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:8080"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "X-API-Key", "x-xsrf-token", "Access-Control-Allow-Headers", "Origin", "Accept", "X-Requested-With", "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

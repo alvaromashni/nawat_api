@@ -14,7 +14,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ALLOWED_ORIGINS
-        value: https://nawatfrontend-btrc1qyvc-alvaro-mashnis-projects.vercel.app/
+        value: https://nawatfrontend.vercel.app
       - key: REDIS_HOST
         fromService:
           name: smart-mesquita-redis
