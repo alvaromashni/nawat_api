@@ -2,6 +2,7 @@ package br.com.smartmesquitaapi.pix;
 
 import br.com.smartmesquitaapi.organization.domain.Organization;
 import br.com.smartmesquitaapi.api.exception.auth.UserInactiveException;
+import br.com.smartmesquitaapi.organization.repository.OrganizationRepository;
 import br.com.smartmesquitaapi.pix.domain.PixCharge;
 import br.com.smartmesquitaapi.pix.domain.PixChargeStatus;
 import br.com.smartmesquitaapi.user.domain.BankDetails;
@@ -31,6 +32,7 @@ public class PixChargeService {
 
     private final PixChargeRepository pixChargeRepository;
     private final UserRepository userRepository;
+    private final OrganizationRepository organizationRepository;
 
     // Configurações de validação
     private static final int MIN_AMOUNT_CENTS = 100;
@@ -42,11 +44,14 @@ public class PixChargeService {
 
     @Transactional
     public CreatePixChargeResponse createPixCharge(
-            Organization organization,
+            Organization organizationParcial,
             UUID userId,
             CreatePixChargeRequest request,
             String clientIp
     ) {
+
+        Organization organization = organizationRepository.findById(organizationParcial.getId())
+                .orElseThrow(() -> new IllegalStateException("Organização não encontrada no banco"));
 
         validateOrganization(organization);
 

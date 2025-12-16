@@ -66,16 +66,20 @@ public class PixChargeController {
                 request.getAmountCents() / 100.0
         );
 
-        request.setLocalDonationId(localId);
+        try {
+            CreatePixChargeResponse response = pixChargeService.createPixCharge(
+                    organization, // Passa a org
+                    userId,
+                    request,
+                    getClientIp(httpRequest)
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-        CreatePixChargeResponse response = pixChargeService.createPixCharge(
-                organization,
-                userId,
-                request,
-                getClientIp(httpRequest)
-        );
+        } catch (Exception e) {
+            log.error("ERRO FATAL AO CRIAR PIX: ", e);
+            throw e;
+        }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
