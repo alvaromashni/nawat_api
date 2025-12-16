@@ -19,7 +19,6 @@ import java.util.UUID;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
 public class User implements UserDetails {
 

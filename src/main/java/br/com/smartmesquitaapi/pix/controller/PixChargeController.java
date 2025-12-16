@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.pix.controller;
 
+import br.com.smartmesquitaapi.organization.domain.Organization;
 import br.com.smartmesquitaapi.pix.PixChargeService;
 import br.com.smartmesquitaapi.user.domain.User;
 import br.com.smartmesquitaapi.ratelimit.RateLimitType;
@@ -13,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,28 +32,45 @@ public class PixChargeController {
 
     private final PixChargeService pixChargeService;
 
-    /**
-     * Cria uma nova cobrança PIX com QR Code
-     */
+
     @PostMapping("/{localId}/pix")
     @RateLimit(limit = 1, duration = 10, unit = TimeUnit.SECONDS, type = RateLimitType.USER)
     public ResponseEntity<CreatePixChargeResponse> createPixCharge(
             @PathVariable String localId,
             @Valid @RequestBody CreatePixChargeRequest request,
-            @AuthenticationPrincipal User authenticatedUser,
+            Authentication authentication,
             HttpServletRequest httpRequest
     ) {
-        log.info("POST /api/donations/{}/pix - User: {} | Amount: R$ {} | IP: {}",
+        Organization organization;
+        UUID userId = null;
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User user) {
+            userId = user.getUserId();
+            organization = user.getOrganization();
+        } else if (principal instanceof Organization org) {
+            organization = org;
+        } else {
+            throw new IllegalStateException("Tipo de autenticação não suportado");
+        }
+
+        if (organization == null) {
+            throw new IllegalStateException("Nenhuma organização vinculada à requisição");
+        }
+
+        log.info("POST /api/donations/{}/pix - Actor: {} | Org: {} | Amount: R$ {}",
                 localId,
-                authenticatedUser.getUserId(),
-                request.getAmountCents() / 100.0,
-                getClientIp(httpRequest)
+                (userId != null ? "User:" + userId : "Totem"),
+                organization.getId(),
+                request.getAmountCents() / 100.0
         );
 
         request.setLocalDonationId(localId);
 
         CreatePixChargeResponse response = pixChargeService.createPixCharge(
-                authenticatedUser.getUserId(),
+                organization,
+                userId,
                 request,
                 getClientIp(httpRequest)
         );

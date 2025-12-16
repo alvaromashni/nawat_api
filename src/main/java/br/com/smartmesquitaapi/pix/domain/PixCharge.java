@@ -1,5 +1,6 @@
 package br.com.smartmesquitaapi.pix.domain;
 
+import br.com.smartmesquitaapi.organization.domain.Organization;
 import br.com.smartmesquitaapi.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,11 +37,13 @@ public class PixCharge {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID pixChargeId;
 
-    /**
-     * Referência ao User (mesquita/instituição) que receberá o pagamento
-     */
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     /**
