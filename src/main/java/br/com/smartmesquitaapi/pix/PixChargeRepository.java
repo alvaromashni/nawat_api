@@ -18,8 +18,11 @@ import java.util.UUID;
 public interface PixChargeRepository extends JpaRepository<PixCharge, UUID> {
 
 
-    @Query("SELECT pc FROM PixCharge pc WHERE pc.user.userId = :userId AND pc.idempotencyKey = :idempotencyKey")
-    Optional<PixCharge> findByOrganizationIdAndIdempotencyKey(UUID organizationId, String idempotencyKey);
+    @Query("SELECT pc FROM PixCharge pc WHERE pc.organization.id = :organizationId AND pc.idempotencyKey = :idempotencyKey")
+    Optional<PixCharge> findByOrganizationIdAndIdempotencyKey(
+            @Param("organizationId") UUID organizationId,
+            @Param("idempotencyKey") String idempotencyKey
+    );
 
 
     Optional<PixCharge> findByTxid(String txid);
